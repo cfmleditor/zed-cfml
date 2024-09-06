@@ -1,5 +1,5 @@
-name = "CFML"
-grammar = "cfml"
+name = "CFSCRIPT"
+grammar = "cfscript"
 path_suffixes = ["cfc"]
 autoclose_before = ";:.,=}])>"
 block_comment = ["<!--- ", " --->"]

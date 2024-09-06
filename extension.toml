@@ -6,14 +6,17 @@ schema_version = 1
 authors = ["Gareth Edwards <ghedwards@gmail.com>"]
 repository = "https://github.com/cfmleditor/zed-cfml"
 
-[grammars.cfml]
-repository = "https://github.com/cfmleditor/tree-sitter-cfml"
-commit = "8a776446f140e75e020ac3d46dc4488da7681931"
-
 [grammars.cfhtml]
 repository = "https://github.com/cfmleditor/tree-sitter-cfml"
-commit = "8a776446f140e75e020ac3d46dc4488da7681931"
+commit = "5b48538245e5a65637989f369c9202d53dc37eec"
+path = "./cfhtml"
+
+[grammars.cfml]
+repository = "https://github.com/cfmleditor/tree-sitter-cfml"
+commit = "5b48538245e5a65637989f369c9202d53dc37eec"
+path = "./cfml"
 
 [grammars.cfscript]
 repository = "https://github.com/cfmleditor/tree-sitter-cfml"
-commit = "8a776446f140e75e020ac3d46dc4488da7681931"
+commit = "5b48538245e5a65637989f369c9202d53dc37eec"
+path = "./cfscript"
