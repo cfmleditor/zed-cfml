@@ -1,4 +1,4 @@
-name = "CFML"
+name = "cfml"
 grammar = "cfml"
 path_suffixes = ["cfc"]
 autoclose_before = ";:.,=}])>"

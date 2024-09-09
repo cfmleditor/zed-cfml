@@ -1,4 +1,4 @@
-name = "CFSCRIPT"
+name = "cfscript"
 grammar = "cfscript"
 path_suffixes = ["cfs"]
 autoclose_before = ";:.,=}])>"
