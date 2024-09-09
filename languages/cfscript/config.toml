@@ -1,6 +1,6 @@
 name = "CFSCRIPT"
 grammar = "cfscript"
-path_suffixes = ["cfc"]
+path_suffixes = ["cfs"]
 autoclose_before = ";:.,=}])>"
 block_comment = ["<!--- ", " --->"]
 brackets = [
