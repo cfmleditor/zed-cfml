@@ -2,6 +2,7 @@
 (erroneous_end_tag_name) @tag.error
 (doctype) @constant
 (attribute_name) @attribute
+(cf_attribute_name) @attribute
 (attribute_value) @string
 (raw_text) @embedded
 (start_tag) @tag
@@ -9,6 +10,7 @@
 (self_closing_tag) @tag
 (cf_selfclose_tag) @tag
 (cf_output_tag) @tag
+(cfscript_element) @tag
 (cf_tag) @tag
 
 ; Variables
@@ -28,11 +30,13 @@
   name: (identifier) @function) @definition.function
 
 (cf_function
-	(cf_attribute
-    	(cf_attribute_name) @attribute (#eq? @attribute "name")
-        (quoted_cf_attribute_value
-        	(attribute_value) @function
-        )
+	(cf_tag_open
+		(cf_attribute
+	    	(cf_attribute_name) @attribute (#eq? @attribute "name")
+	        (quoted_cf_attribute_value
+	        	(attribute_value) @function
+	        )
+		)
 	)
 ) @definition.function
 
@@ -108,13 +112,10 @@
 
 ; Literals
 ;---------
-;
-; (this)
-; (super)
-; @variable.builtin
 
+; Built-in variables (matched by name since they're parsed as identifiers in cfhtml)
 ((identifier) @variable.builtin
-  (#eq? @variable.builtin "self"))
+  (#any-of? @variable.builtin "this" "super" "self" "variables" "arguments" "local" "request" "session" "application" "server" "cgi" "form" "url" "cookie" "client"))
 
 [
   (true)
@@ -139,7 +140,7 @@
 (string) @string
 (text) @string
 
-(escape_sequence) @string.escape
+; (escape_sequence) @string.escape
 
 (regex_pattern) @string.regexp
 (regex_flags) @character.special
@@ -189,7 +190,7 @@
   "%="
   "<"
   "<="
-  "<<"
+  ;"<<"
   "<<="
   "="
   "=="
@@ -200,9 +201,9 @@
   "=>"
   ">"
   ">="
-  ">>"
+  ;">>"
   ">>="
-  ">>>"
+  ;">>>"
   ">>>="
   "~"
   "^"
@@ -226,8 +227,8 @@
   "]"
   "{"
   "}"
-  "<"
-  ">"
-  "</"
-  "/>"
+  ;"<"
+  ;">"
+  ; "</"
+  ; "/>"
 ] @punctuation.bracket

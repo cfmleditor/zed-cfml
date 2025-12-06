@@ -1,6 +1,7 @@
-name = "cfscript"
+name = "CFML (Script)"
 grammar = "cfscript"
 path_suffixes = ["cfs"]
+first_line_pattern = "^\\s*(/\\*|//|component|interface|abstract)"
 autoclose_before = ";:.,=}])>"
 block_comment = ["/* ", " */"]
 brackets = [
@@ -20,5 +21,5 @@ brackets = [
         "string",
     ] },
 ]
-prettier_parser_name = "cfml"
+prettier_parser_name = "cfscript"
 word_characters = ["-"]

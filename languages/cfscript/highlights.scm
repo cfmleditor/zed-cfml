@@ -1,3 +1,40 @@
+; Keywords
+;---------
+
+[
+  "component"
+  "function"
+  "return"
+  "if"
+  "else"
+  "for"
+  "while"
+  "do"
+  "switch"
+  "case"
+  "default"
+  "break"
+  "continue"
+  "try"
+  "catch"
+  "finally"
+  "throw"
+  "new"
+  "var"
+  "import"
+] @keyword
+
+(function_access) @keyword
+(parameter_type) @type
+(return_type) @type
+
+(this) @variable.builtin
+(super) @variable.builtin
+
+; CFML scope variables
+((identifier) @variable.builtin
+  (#any-of? @variable.builtin "variables" "arguments" "local" "request" "session" "application" "server" "cgi" "form" "url" "cookie" "client"))
+
 ; Variables
 ;----------
 
@@ -47,9 +84,6 @@
 
 ; Literals
 ;---------
-
-; (this) @variable.builtin
-; (super) @variable.builtin
 
 [
   (true)
@@ -127,8 +161,8 @@
   "]"
   "{"
   "}"
-  "<"
-  ">"
-  "</"
-  "/>"
+  ;"<"
+  ;">"
+  ;"</"
+  ;"/>"
 ] @punctuation.bracket
