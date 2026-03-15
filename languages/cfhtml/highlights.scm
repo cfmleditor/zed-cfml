@@ -1,5 +1,5 @@
-(tag_name) @tag
 (erroneous_end_tag_name) @tag.error
+(erroneous_cf_end_tag_name) @tag.error
 (doctype) @constant
 (attribute_name) @attribute
 (cf_attribute_name) @attribute
@@ -10,8 +10,14 @@
 (self_closing_tag) @tag
 (cf_selfclose_tag) @tag
 (cf_output_tag) @tag
-(cfscript_element) @tag
-(cf_tag) @tag
+(cf_script_tag) @tag
+(cf_start_tag) @tag
+(cf_end_tag) @tag
+(cf_if_tag) @tag
+(cf_query_tag) @tag
+(cf_else_tag) @tag
+(cf_elseif_tag) @tag
+(cf_return_tag) @tag
 
 ; Variables
 ;----------
@@ -29,19 +35,14 @@
 (function_expression
   name: (identifier) @function) @definition.function
 
-(cf_function
-	(cf_tag_open
-		(cf_attribute
-	    	(cf_attribute_name) @attribute (#eq? @attribute "name")
-	        (quoted_cf_attribute_value
-	        	(attribute_value) @function
-	        )
-		)
-	)
-) @definition.function
-
 (function_declaration
   name: (identifier) @function)
+
+(function_declaration
+  (access_type) @keyword)
+
+(function_declaration
+  (return_type) @type)
 
 (generator_function
   name: (identifier) @function)
@@ -58,6 +59,12 @@
 (method_definition
   name: (property_identifier) @constructor
   (#eq? @constructor "constructor"))
+
+(formal_parameters
+  (type) @type)
+
+(formal_parameters
+  (required) @keyword)
 
 (pair
   key: (property_identifier) @function.method
@@ -112,10 +119,10 @@
 
 ; Literals
 ;---------
-
-; Built-in variables (matched by name since they're parsed as identifiers in cfhtml)
 ((identifier) @variable.builtin
-  (#any-of? @variable.builtin "this" "super" "self" "variables" "arguments" "local" "request" "session" "application" "server" "cgi" "form" "url" "cookie" "client"))
+  (#eq? @variable.builtin "self"))
+
+(cf_var) @keyword
 
 [
   (true)
@@ -139,8 +146,7 @@
 
 (string) @string
 (text) @string
-
-; (escape_sequence) @string.escape
+(hash_empty) @punctuation.special
 
 (regex_pattern) @string.regexp
 (regex_flags) @character.special
@@ -150,7 +156,10 @@
 
 (number) @number
 
-(hash_expression) @function
+(hash_expression
+  "#" @punctuation.special)
+
+(unary_operator) @operator
 
 ((identifier) @number
   (#any-of? @number "NaN" "Infinity"))
@@ -173,6 +182,9 @@
     ":"
   ] @keyword.conditional.ternary)
 
+(elvis_expression
+  "?:" @keyword.conditional.ternary)
+
 [
   "-"
   "--"
@@ -189,8 +201,6 @@
   "%"
   "%="
   "<"
-  "<="
-  ;"<<"
   "<<="
   "="
   "=="
@@ -200,10 +210,7 @@
   "!=="
   "=>"
   ">"
-  ">="
-  ;">>"
   ">>="
-  ;">>>"
   ">>>="
   "~"
   "^"
@@ -221,14 +228,45 @@
 ] @operator
 
 [
+  "var"
+  "let"
+  "const"
+  "function"
+  "new"
+  "return"
+  "if"
+  "else"
+  "for"
+  "while"
+  "do"
+  "switch"
+  "case"
+  "default"
+  "break"
+  "continue"
+  "try"
+  "catch"
+  "finally"
+  "throw"
+  "in"
+  "of"
+  "instanceof"
+  "async"
+  "static"
+  "export"
+  "yield"
+  "with"
+] @keyword
+
+[
   "("
   ")"
   "["
   "]"
   "{"
   "}"
-  ;"<"
-  ;">"
-  ; "</"
-  ; "/>"
+  "<"
+  ">"
+  "</"
+  "/>"
 ] @punctuation.bracket
