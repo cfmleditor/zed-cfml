@@ -1,0 +1,14 @@
+name = "CFML (Query)"
+grammar = "cfquery"
+autoclose_before = ";:.,=}])>"
+block_comment = ["<!--- ", " --->"]
+brackets = [
+    { start = "{", end = "}", close = true, newline = true },
+    { start = "[", end = "]", close = true, newline = true },
+    { start = "(", end = ")", close = true, newline = true },
+    { start = "\"", end = "\"", close = true, newline = false, not_in = ["comment", "string"] },
+    { start = "<", end = ">", close = false, newline = true, not_in = ["comment", "string"] },
+    { start = "!--", end = " --", close = true, newline = false, not_in = ["comment", "string"] },
+]
+prettier_parser_name = "cfquery"
+word_characters = ["-"]
