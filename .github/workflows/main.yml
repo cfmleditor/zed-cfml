@@ -1,7 +1,3 @@
-permissions:
-  contents: write
-  pull-requests: write
-
 on:
   push:
     tags:
@@ -11,6 +7,9 @@ jobs:
   homebrew:
     name: Release Zed Extension
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - uses: huacnlee/zed-extension-action@v2
         with:
