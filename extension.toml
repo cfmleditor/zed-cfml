@@ -8,20 +8,20 @@ repository = "https://github.com/cfmleditor/zed-cfml"
 
 [grammars.cfhtml]
 repository = "https://github.com/cfmleditor/tree-sitter-cfml"
-rev = "1207005eebcf67859ee921d495f7f8b17d951883"
+rev = "19923ac6621a5cd1d930fbd4e736f9156f077a46"
 path = "./cfhtml"
 
 [grammars.cfml]
 repository = "https://github.com/cfmleditor/tree-sitter-cfml"
-rev = "1207005eebcf67859ee921d495f7f8b17d951883"
+rev = "19923ac6621a5cd1d930fbd4e736f9156f077a46"
 path = "./cfml"
 
 [grammars.cfscript]
 repository = "https://github.com/cfmleditor/tree-sitter-cfml"
-rev = "1207005eebcf67859ee921d495f7f8b17d951883"
+rev = "19923ac6621a5cd1d930fbd4e736f9156f077a46"
 path = "./cfscript"
 
 [grammars.cfquery]
 repository = "https://github.com/cfmleditor/tree-sitter-cfml"
-rev = "1207005eebcf67859ee921d495f7f8b17d951883"
+rev = "19923ac6621a5cd1d930fbd4e736f9156f077a46"
 path = "./cfquery"
