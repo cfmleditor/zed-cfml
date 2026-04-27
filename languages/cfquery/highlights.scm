@@ -14,12 +14,12 @@
   "[" @punctuation.bracket
   (identifier) @variable
   "]" @punctuation.bracket)
-(cfquery_boolean_literal) @constant.builtin
+(cfquery_boolean_literal) @constant.special
 (comment) @comment
 (cf_comment) @comment
 
 ; Parameters and CF hash interpolation inside SQL
-(parameter) @variable.parameter
+(parameter) @variable.special
 (hash_param
   "#" @punctuation.special
   (cf_identifier_path) @variable

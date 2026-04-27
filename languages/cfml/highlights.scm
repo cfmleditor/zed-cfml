@@ -1,15 +1,11 @@
-; Document and structure (from Lucee-style rules)
-(program) @document
-(doctype) @doctype
+(doctype) @constant
 (entity) @constant
-(html_text) @text
 
-(erroneous_end_tag_name) @tag.error
-(erroneous_cf_end_tag_name) @tag.error
+(erroneous_end_tag_name) @tag
+(erroneous_cf_end_tag_name) @tag
 (attribute_name) @attribute
 (cf_attribute_name) @attribute
 (attribute_value) @string
-(raw_text) @embedded
 (start_tag) @tag
 (end_tag) @tag
 (self_closing_tag) @tag
@@ -35,7 +31,7 @@
 (identifier) @variable
 
 ; CFML scopes (variables, session, etc.)
-(cf_scope_identifier) @namespace
+(cf_scope_identifier) @variable.special
 
 ; Properties
 ;-----------
@@ -48,16 +44,16 @@
 ;--------------------------------
 
 (function_expression
-  name: (identifier) @function) @definition.function
+  name: (identifier) @function)
 
 (function_declaration
   name: (identifier) @function)
 
 (function_declaration
-  (access_type) @access_type)
+  (access_type) @keyword)
 
 (function_declaration
-  (return_type) @return_type)
+  (return_type) @type)
 
 (method_definition
   name: [
@@ -77,7 +73,7 @@
   key: (property_identifier) @function.method
   value: (arrow_function))
 
-(array) @expression
+(array) @variable
 
 (cf_set_tag) @tag
 
@@ -111,22 +107,22 @@
 ;--------------------------
 
 (call_expression
-  function: (identifier) @function.call)
+  function: (identifier) @function)
 
 (call_expression
   function: (member_expression
     property: [
       (property_identifier)
       (private_property_identifier)
-    ] @function.method.call))
+    ] @function.method))
 
 ; Literals
 ;---------
-((identifier) @variable.builtin
-  (#eq? @variable.builtin "self"))
+((identifier) @variable.special
+  (#eq? @variable.special "self"))
 
-(this) @variable.builtin
-(super) @variable.builtin
+(this) @variable.special
+(super) @variable.special
 
 (cf_var) @keyword
 
@@ -138,28 +134,25 @@
 [
   (null)
   (undefined)
-] @constant.builtin
+] @constant.special
 
 [
   (comment)
   (cf_comment)
-] @comment @spell
+] @comment
 
-((comment) @comment.documentation
-  (#lua-match? @comment.documentation "^/[*][*][^*].*[*]/$"))
-
-((string_fragment) @keyword.directive
-  (#eq? @keyword.directive "use strict"))
+((comment) @comment.doc
+  (#lua-match? @comment.doc "^/[*][*][^*].*[*]/$"))
 
 (string) @string
 (text) @string
 (hash_empty) @punctuation.special
 
-(regex_pattern) @string.regexp
-(regex_flags) @character.special
+(regex_pattern) @string.regex
+(regex_flags) @string.special
 
 (regex
-  "/" @punctuation.bracket) ; Regex delimiters
+  "/" @punctuation.bracket)
 
 (number) @number
 
@@ -189,10 +182,10 @@
   [
     "?"
     ":"
-  ] @keyword.conditional.ternary)
+  ] @operator)
 
 (elvis_expression
-  "?:" @keyword.conditional.ternary)
+  "?:" @operator)
 
 [
   "-"

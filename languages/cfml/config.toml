@@ -3,6 +3,7 @@ grammar = "cfml"
 path_suffixes = []
 first_line_pattern = "^\\s*(<cfcomponent|<cfinterface|<!---)"
 autoclose_before = ";:.,=}])>"
+line_comments = ["// "]
 block_comment = ["<!--- ", " --->"]
 brackets = [
     { start = "{", end = "}", close = true, newline = true },

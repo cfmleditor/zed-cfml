@@ -4,7 +4,7 @@
 (identifier) @variable
 
 ; CFML scopes (variables, session, etc.)
-(cf_scope_identifier) @namespace
+(cf_scope_identifier) @variable.special
 
 ; Properties
 ;-----------
@@ -66,22 +66,22 @@
  ] @constant
  (#match? @constant "^[A-Z_][A-Z\\d_]+$"))
 
-((identifier) @variable.builtin
- (#match? @variable.builtin "^(arguments|module|console|window|document)$"))
+((identifier) @variable.special
+ (#match? @variable.special "^(arguments|module|console|window|document)$"))
 
 ; Literals
 ;---------
 
-(this) @variable.builtin
-(super) @variable.builtin
-(undefined) @constant.builtin
+(this) @variable.special
+(super) @variable.special
+(undefined) @constant.special
 
 [
   (true)
   (false)
   (null)
   (undefined)
-] @constant.builtin
+] @constant.special
 
 (comment) @comment
 
@@ -94,7 +94,7 @@
   "#" @punctuation.special)
 (hash_empty) @punctuation.special
 
-(regex) @string.special
+(regex) @string.regex
 (number) @number
 
 ; Tokens
@@ -112,10 +112,10 @@
   [
     "?"
     ":"
-  ] @keyword.conditional.ternary)
+  ] @operator)
 
 (elvis_expression
-  "?:" @keyword.conditional.ternary)
+  "?:" @operator)
 
 [
   "-"
@@ -171,7 +171,7 @@
 
 (template_substitution
   "${" @punctuation.special
-  "}" @punctuation.special) @embedded
+  "}" @punctuation.special)
 
 [
   "as"
