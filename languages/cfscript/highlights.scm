@@ -1,49 +1,16 @@
-; Keywords
-;---------
-
-[
-  "component"
-  "function"
-  "return"
-  "if"
-  "else"
-  "for"
-  "while"
-  "do"
-  "switch"
-  "case"
-  "default"
-  "break"
-  "continue"
-  "try"
-  "catch"
-  "finally"
-  "throw"
-  "new"
-  "var"
-  "import"
-] @keyword
-
-(function_access) @keyword
-(parameter_type) @type
-(return_type) @type
-
-(this) @variable.builtin
-(super) @variable.builtin
-
-; CFML scope variables
-((identifier) @variable.builtin
-  (#any-of? @variable.builtin "variables" "arguments" "local" "request" "session" "application" "server" "cgi" "form" "url" "cookie" "client"))
-
 ; Variables
 ;----------
 
 (identifier) @variable
 
+; CFML scopes (variables, session, etc.)
+(cf_scope_identifier) @namespace
+
 ; Properties
 ;-----------
 
 (property_identifier) @property
+(shorthand_property_identifier) @property
 
 ; Function and method definitions
 ;--------------------------------
@@ -52,6 +19,10 @@
   name: (identifier) @function)
 (function_declaration
   name: (identifier) @function)
+(function_declaration
+  (access_type) @keyword)
+(function_declaration
+  (return_type) @type)
 (method_definition
   name: (property_identifier) @function.method)
 
@@ -82,20 +53,49 @@
   function: (member_expression
     property: (property_identifier) @function.method))
 
+; Special identifiers
+;--------------------
+
+((identifier) @constructor
+ (#match? @constructor "^[A-Z]"))
+
+([
+    (identifier)
+    (shorthand_property_identifier)
+    (shorthand_property_identifier_pattern)
+ ] @constant
+ (#match? @constant "^[A-Z_][A-Z\\d_]+$"))
+
+((identifier) @variable.builtin
+ (#match? @variable.builtin "^(arguments|module|console|window|document)$"))
+
 ; Literals
 ;---------
+
+(this) @variable.builtin
+(super) @variable.builtin
+(undefined) @constant.builtin
 
 [
   (true)
   (false)
   (null)
+  (undefined)
 ] @constant.builtin
 
 (comment) @comment
 
 [
   (string)
+  (template_string)
 ] @string
+
+(hash_expression
+  "#" @punctuation.special)
+(hash_empty) @punctuation.special
+
+(regex) @string.special
+(number) @number
 
 ; Tokens
 ;-------
@@ -103,9 +103,19 @@
 [
   ";"
   (optional_chain)
+  (static_chain)
   "."
   ","
 ] @punctuation.delimiter
+
+(ternary_expression
+  [
+    "?"
+    ":"
+  ] @keyword.conditional.ternary)
+
+(elvis_expression
+  "?:" @keyword.conditional.ternary)
 
 [
   "-"
@@ -124,22 +134,17 @@
   "%="
   "<"
   "<="
-  "<<"
   "<<="
   "="
   "=="
   "==="
-  "!"
   "!="
   "!=="
   "=>"
   ">"
   ">="
-  ">>"
   ">>="
-  ">>>"
   ">>>="
-  "~"
   "^"
   "&"
   "|"
@@ -147,6 +152,7 @@
   "&="
   "|="
   "&&"
+  (logical_or)
   "||"
   "??"
   "&&="
@@ -161,8 +167,48 @@
   "]"
   "{"
   "}"
-  ;"<"
-  ;">"
-  ;"</"
-  ;"/>"
-] @punctuation.bracket
+]  @punctuation.bracket
+
+(template_substitution
+  "${" @punctuation.special
+  "}" @punctuation.special) @embedded
+
+[
+  "as"
+  "break"
+  "case"
+  "catch"
+  "component"
+  "const"
+  "continue"
+  "debugger"
+  "default"
+  "do"
+  "else"
+  "export"
+  "finally"
+  "for"
+  "from"
+  "function"
+  "get"
+  "if"
+  "import"
+  "in"
+  "instanceof"
+  "let"
+  "new"
+  "of"
+  "query"
+  "return"
+  "set"
+  "static"
+  "switch"
+  "target"
+  "throw"
+  "try"
+  "var"
+  "void"
+  "while"
+  "with"
+  "yield"
+] @keyword

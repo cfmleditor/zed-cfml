@@ -1,6 +1,11 @@
+; Document and structure (from Lucee-style rules)
+(program) @document
+(doctype) @doctype
+(entity) @constant
+(html_text) @text
+
 (erroneous_end_tag_name) @tag.error
 (erroneous_cf_end_tag_name) @tag.error
-(doctype) @constant
 (attribute_name) @attribute
 (cf_attribute_name) @attribute
 (attribute_value) @string
@@ -9,26 +14,35 @@
 (end_tag) @tag
 (self_closing_tag) @tag
 (cf_selfclose_tag) @tag
+(cf_start_tag_with_selfclose) @tag
 (cf_output_tag) @tag
 (cf_script_tag) @tag
 (cf_start_tag) @tag
-(cf_start_tag_with_selfclose) @tag
 (cf_end_tag) @tag
 (cf_if_tag) @tag
 (cf_query_tag) @tag
 (cf_else_tag) @tag
 (cf_elseif_tag) @tag
 (cf_return_tag) @tag
+(cf_xml_tag) @tag
+
+(tag_name) @tag
+(cf_tag_name) @tag
 
 ; Variables
 ;----------
 
 (identifier) @variable
 
+; CFML scopes (variables, session, etc.)
+(cf_scope_identifier) @namespace
+
 ; Properties
 ;-----------
 
 (property_identifier) @property
+
+(shorthand_property_identifier) @property
 
 ; Function and method definitions
 ;--------------------------------
@@ -40,16 +54,10 @@
   name: (identifier) @function)
 
 (function_declaration
-  (access_type) @keyword)
+  (access_type) @access_type)
 
 (function_declaration
-  (return_type) @type)
-
-(generator_function
-  name: (identifier) @function)
-
-(generator_function_declaration
-  name: (identifier) @function)
+  (return_type) @return_type)
 
 (method_definition
   name: [
@@ -60,12 +68,6 @@
 (method_definition
   name: (property_identifier) @constructor
   (#eq? @constructor "constructor"))
-
-(formal_parameters
-  (type) @type)
-
-(formal_parameters
-  (required) @keyword)
 
 (pair
   key: (property_identifier) @function.method
@@ -123,6 +125,9 @@
 ((identifier) @variable.builtin
   (#eq? @variable.builtin "self"))
 
+(this) @variable.builtin
+(super) @variable.builtin
+
 (cf_var) @keyword
 
 [
@@ -132,6 +137,7 @@
 
 [
   (null)
+  (undefined)
 ] @constant.builtin
 
 [
@@ -172,6 +178,8 @@
   "."
   ","
   ":"
+  (optional_chain)
+  (static_chain)
 ] @punctuation.delimiter
 
 (binary_expression
@@ -221,6 +229,7 @@
   "&="
   "|="
   "&&"
+  (logical_or)
   "||"
   "??"
   "&&="
@@ -252,7 +261,6 @@
   "in"
   "of"
   "instanceof"
-  "async"
   "static"
   "export"
   "yield"
@@ -269,5 +277,4 @@
   "<"
   ">"
   "</"
-  "/>"
 ] @punctuation.bracket
