@@ -1,3 +1,7 @@
+permissions:
+  contents: write
+  pull-requests: write
+      
 on:
   push:
     tags:
@@ -7,9 +11,6 @@ jobs:
   homebrew:
     name: Release Zed Extension
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
     steps:
       - uses: huacnlee/zed-extension-action@v2
         with:
@@ -17,4 +18,4 @@ jobs:
           push-to: cfmleditor/extensions
         env:
           # the personal access token should have "repo" & "workflow" scopes
-          COMMITTER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMITTER_TOKEN: ${{ secrets.ZED_EXTENSION_TOKEN }}
