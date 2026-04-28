@@ -21,6 +21,7 @@
 (cf_elseif_tag) @tag
 (cf_return_tag) @tag
 (cf_xml_tag) @tag
+(cf_savecontent_tag) @tag
 
 (tag_name) @tag
 (cf_tag_name) @tag
@@ -144,6 +145,7 @@
 ((comment) @comment.doc
   (#lua-match? @comment.doc "^/[*][*][^*].*[*]/$"))
 
+(hash_single) @punctuation.special
 (string) @string
 (text) @string
 (hash_empty) @punctuation.special

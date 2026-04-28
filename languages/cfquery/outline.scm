@@ -1,3 +1,6 @@
-; Table references in FROM/JOIN clauses
-(cfquery_table_reference
+; Function definitions
+(function_declaration
+  name: (identifier) @name) @item
+
+(function_expression
   name: (identifier) @name) @item
