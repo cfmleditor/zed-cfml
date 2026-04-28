@@ -210,5 +210,4 @@
   "void"
   "while"
   "with"
-  "yield"
 ] @keyword

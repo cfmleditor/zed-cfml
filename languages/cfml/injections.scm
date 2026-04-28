@@ -12,6 +12,10 @@
  
 ((cf_script_content) @injection.content (#set! injection.language "CFML (Script)"))
 
+((component_file
+  (cf_component_content) @injection.content)
+ (#set! injection.language "CFML (Script)"))
+
 ((cf_query_tag
   (cf_query_content) @injection.content)
  (#set! injection.language "cfquery"))
