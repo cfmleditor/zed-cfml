@@ -15,7 +15,6 @@
 
 ; Variables
 (identifier) @variable
-(cf_scope_identifier) @variable.special
 
 ; Properties
 (property_identifier) @property
@@ -30,9 +29,6 @@
 
 (function_declaration
   (access_type) @keyword)
-
-(function_declaration
-  (return_type) @type)
 
 (method_definition
   name: [
