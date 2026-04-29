@@ -1,22 +1,22 @@
 id = "cfml"
 name = "CFML"
 description = "CFML support."
-version = "0.2.5"
+version = "0.2.6"
 schema_version = 1
 authors = ["Gareth Edwards <ghedwards@gmail.com>"]
 repository = "https://github.com/cfmleditor/zed-cfml"
 
 [grammars.cfml]
 repository = "https://github.com/cfmleditor/tree-sitter-cfml"
-rev = "63c4e6fb1ca2c48e2f25679a187fdb69a3e1d759"
+rev = "0bbd3a1e19c7ad39f30d54a1df61e3d86749adc0"
 path = "./cfml"
 
 [grammars.cfscript]
 repository = "https://github.com/cfmleditor/tree-sitter-cfml"
-rev = "63c4e6fb1ca2c48e2f25679a187fdb69a3e1d759"
+rev = "0bbd3a1e19c7ad39f30d54a1df61e3d86749adc0"
 path = "./cfscript"
 
 [grammars.cfquery]
 repository = "https://github.com/cfmleditor/tree-sitter-cfml"
-rev = "63c4e6fb1ca2c48e2f25679a187fdb69a3e1d759"
+rev = "0bbd3a1e19c7ad39f30d54a1df61e3d86749adc0"
 path = "./cfquery"
