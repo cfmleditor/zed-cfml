@@ -2,6 +2,7 @@ use zed_extension_api as zed;
 
 const SERVER_PATH: &str = "cfmleditor-lsp";
 const GITHUB_REPO: &str = "cfmleditor/cfmleditor-lsp";
+const LSP_VERSION: &str = "latest";
 
 struct CfmlExtension {
     cached_binary_path: Option<String>,
@@ -28,13 +29,17 @@ impl CfmlExtension {
             &zed::LanguageServerInstallationStatus::CheckingForUpdate,
         );
 
-        let release = zed::latest_github_release(
-            GITHUB_REPO,
-            zed::GithubReleaseOptions {
-                require_assets: true,
-                pre_release: false,
-            },
-        )
+        let release = if LSP_VERSION == "latest" {
+            zed::latest_github_release(
+                GITHUB_REPO,
+                zed::GithubReleaseOptions {
+                    require_assets: true,
+                    pre_release: false,
+                },
+            )
+        } else {
+            zed::github_release_by_tag_name(GITHUB_REPO, LSP_VERSION)
+        }
         .map_err(|e| format!("failed to fetch release: {e}"))?;
 
         let (os, arch) = zed::current_platform();
