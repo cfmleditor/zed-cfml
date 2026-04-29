@@ -1,4 +1,4 @@
-name = "CFML (Component, Tag-Based)"
+name = "CFML (Tag)"
 grammar = "cfml"
 path_suffixes = ["cfm","cfc","cfml"]
 autoclose_before = ";:.,=}])>"
