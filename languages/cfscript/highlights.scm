@@ -66,7 +66,7 @@
  (#match? @constant "^[A-Z_][A-Z\\d_]+$"))
 
 ((identifier) @variable.special
- (#match? @variable.special "(?i)^(arguments|variables|local|self|super|this|session|application|request|url|form|cgi|server|cookie|client)$"))
+ (#match? @variable.special "(?i)^(arguments|attributes|variables|local|self|super|this|session|application|request|url|form|cgi|server|cookie|client)$"))
 
 ; Literals
 ;---------
