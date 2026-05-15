@@ -12,6 +12,7 @@
 (cf_selfclose_tag) @tag
 (cf_start_tag_with_selfclose) @tag
 (cf_output_tag) @tag
+(cf_function_tag) @tag
 (cf_script_tag) @tag
 (cf_start_tag) @tag
 (cf_end_tag) @tag
@@ -22,6 +23,10 @@
 (cf_return_tag) @tag
 (cf_xml_tag) @tag
 (cf_savecontent_tag) @tag
+(cf_component_open_tag) @tag
+(cf_component_close_tag) @tag
+
+(cf_selfclose_void_tag_end) @punctuation.bracket
 
 (tag_name) @tag
 (cf_tag_name) @tag

@@ -9,13 +9,9 @@
   name: (property_identifier) @name) @item
 
 ; cffunction tag
-(cf_tag
-  (cf_start_tag
-    (cf_tag_name) @_cffunction
-    (cf_tag_attributes
-      (cf_attribute
-        (cf_attribute_name) @_name
-        (quoted_cf_attribute_value
-          (attribute_value) @name))))
-  (#eq? @_cffunction "function")
+(cf_function_tag
+  (cf_attribute
+    (cf_attribute_name) @_name
+    (quoted_cf_attribute_value
+      (attribute_value) @name))
   (#eq? @_name "name")) @item

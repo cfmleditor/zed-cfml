@@ -54,7 +54,8 @@ impl CfmlExtension {
             zed::Architecture::X86 => "386",
         };
 
-        let asset_name = format!("cfmleditor-lsp-{os_str}-{arch_str}.tar.gz");
+        let ext = if os == zed::Os::Windows { "zip" } else { "tar.gz" };
+        let asset_name = format!("cfmleditor-lsp-{os_str}-{arch_str}.{ext}");
         let asset = release
             .assets
             .iter()
@@ -62,7 +63,12 @@ impl CfmlExtension {
             .ok_or_else(|| format!("no asset found matching {asset_name}"))?;
 
         let version_dir = format!("cfmleditor-lsp-{}", release.version);
-        let binary_path = format!("{version_dir}/{SERVER_PATH}");
+        let binary_name = if os == zed::Os::Windows {
+            format!("{SERVER_PATH}.exe")
+        } else {
+            SERVER_PATH.to_string()
+        };
+        let binary_path = format!("{version_dir}/{binary_name}");
 
         if !std::fs::metadata(&binary_path).map_or(false, |m| m.is_file()) {
             zed::set_language_server_installation_status(
@@ -70,10 +76,16 @@ impl CfmlExtension {
                 &zed::LanguageServerInstallationStatus::Downloading,
             );
 
+            let file_type = if os == zed::Os::Windows {
+                zed::DownloadedFileType::Zip
+            } else {
+                zed::DownloadedFileType::GzipTar
+            };
+
             zed::download_file(
                 &asset.download_url,
                 &version_dir,
-                zed::DownloadedFileType::GzipTar,
+                file_type,
             )
             .map_err(|e| format!("failed to download: {e}"))?;
 
