@@ -190,8 +190,10 @@
 ] @punctuation.bracket
 
 ; SQL keywords
-((query_identifier) @variable.special
-  (#match? @variable.special "(?i)^(SELECT|FROM|WHERE|AND|OR|NOT|IN|ON|AS|SET|INTO|VALUES|NULL|IS|LIKE|BETWEEN|EXISTS|HAVING|CASE|WHEN|THEN|ELSE|END|ALL|ANY|DISTINCT|UNION|EXCEPT|INTERSECT|LIMIT|OFFSET|FETCH|TOP|WITH|RECURSIVE|INSERT|UPDATE|DELETE|CREATE|ALTER|DROP|TABLE|INDEX|VIEW|JOIN|INNER|LEFT|RIGHT|OUTER|CROSS|FULL|GROUP|ORDER|BY|ASC|DESC|IF|BEGIN|COMMIT|ROLLBACK|TRANSACTION|CASCADE|CONSTRAINT|PRIMARY|FOREIGN|KEY|REFERENCES|DEFAULT|CHECK|UNIQUE|EXEC|EXECUTE|DECLARE|CURSOR|OPEN|CLOSE|DEALLOCATE)$"))
+(query_keyword) @keyword
+
+(query_function
+  name: (query_function_name) @function)
 
 ; SQL identifiers and values
 (query_identifier) @variable
@@ -203,6 +205,9 @@
 
 (query_number
   (number) @number)
+
+(query_math_expression
+  operator: _ @operator)
 
 (quoted_query_value
   (query_value) @string)

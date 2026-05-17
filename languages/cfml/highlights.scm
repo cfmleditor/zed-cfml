@@ -148,7 +148,7 @@
 ] @comment
 
 ((comment) @comment.doc
-  (#lua-match? @comment.doc "^/[*][*][^*].*[*]/$"))
+  (#match? @comment.doc "^/[*][*][^*].*[*]/$"))
 
 (hash_single) @punctuation.special
 (string) @string
