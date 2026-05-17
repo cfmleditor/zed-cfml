@@ -195,6 +195,8 @@
 (query_function
   name: (query_function_name) @function)
 
+(query_function_name) @variable
+
 ; SQL identifiers and values
 (query_identifier) @variable
 (query_alias
@@ -207,6 +209,9 @@
   (number) @number)
 
 (query_math_expression
+  operator: _ @operator)
+
+(query_comparison_expression
   operator: _ @operator)
 
 (quoted_query_value
