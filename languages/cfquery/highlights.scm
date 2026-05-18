@@ -232,3 +232,8 @@
 
 (query_assignment_expression
   "=" @operator)
+
+(query_operator) @operator
+
+(query_open_paren) @punctuation.bracket
+(query_close_paren) @punctuation.bracket

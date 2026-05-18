@@ -8,7 +8,25 @@ on:
       - "v*"
 
 jobs:
-  homebrew:
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract changelog
+        id: changelog
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          NOTES=$(sed -n "/^## \[$VERSION\]/,/^## \[/{/^## \[/!p;}" CHANGELOG.md)
+          echo "notes<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$NOTES" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          body: ${{ steps.changelog.outputs.notes }}
+
+  zed-extension:
     name: Release Zed Extension
     runs-on: ubuntu-latest
     steps:

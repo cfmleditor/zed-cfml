@@ -14,10 +14,10 @@ impl CfmlExtension {
         language_server_id: &zed::LanguageServerId,
         worktree: &zed::Worktree,
     ) -> zed::Result<String> {
-        if let Some(path) = &self.cached_binary_path {
-            if std::fs::metadata(path).map_or(false, |m| m.is_file()) {
-                return Ok(path.clone());
-            }
+        if let Some(path) = &self.cached_binary_path
+            && std::fs::metadata(path).is_ok_and(|m| m.is_file())
+        {
+            return Ok(path.clone());
         }
 
         if let Some(path) = worktree.which(SERVER_PATH) {
@@ -70,7 +70,7 @@ impl CfmlExtension {
         };
         let binary_path = format!("{version_dir}/{binary_name}");
 
-        if !std::fs::metadata(&binary_path).map_or(false, |m| m.is_file()) {
+        if !std::fs::metadata(&binary_path).is_ok_and(|m| m.is_file()) {
             zed::set_language_server_installation_status(
                 language_server_id,
                 &zed::LanguageServerInstallationStatus::Downloading,
