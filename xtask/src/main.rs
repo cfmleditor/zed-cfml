@@ -29,13 +29,14 @@ fn main() {
                 eprintln!("  e.g. cargo xtask release 0.2.18");
                 process::exit(1);
             });
-            release(version);
+            let dry_run = args.iter().any(|a| a == "--dry-run");
+            release(version, dry_run);
         }
         _ => {
             eprintln!("Usage:");
             eprintln!("  cargo xtask update-grammar [--commit]");
             eprintln!("  cargo xtask lint");
-            eprintln!("  cargo xtask release <version>");
+            eprintln!("  cargo xtask release <version> [--dry-run]");
             process::exit(1);
         }
     }
@@ -109,7 +110,11 @@ fn lint() {
     run_cmd(&root, "cargo", &["clippy", "--target", "wasm32-wasip2", "--", "-D", "warnings"]);
 }
 
-fn release(version: &str) {
+fn release(version: &str, dry_run: bool) {
+    if dry_run {
+        println!("DRY RUN: no files will be modified, no git operations will run\n");
+    }
+
     // Validate semver format
     let parts: Vec<&str> = version.split('.').collect();
     if parts.len() != 3 || parts.iter().any(|p| p.parse::<u32>().is_err()) {
@@ -184,26 +189,54 @@ fn release(version: &str) {
         eprintln!("Error: CHANGELOG.md has no content under ## [Unreleased]");
         process::exit(1);
     }
-    let new_changelog = changelog.replace(
-        unreleased_heading,
-        &format!("{unreleased_heading}\n\n## [{version}]"),
-    );
-    fs::write(&changelog_path, new_changelog).expect("failed to write CHANGELOG.md");
-    println!("Updated CHANGELOG.md: moved unreleased to [{version}]");
+
+    if !dry_run {
+        println!("\nThis will:");
+        println!("  - Update versions in extension.toml and Cargo.toml to {version}");
+        println!("  - Move CHANGELOG.md [Unreleased] content to [{version}]");
+        println!("  - Lint, build, and test");
+        println!("  - Commit, tag v{version}, and push\n");
+        eprint!("Proceed? [y/N] ");
+        let mut input = String::new();
+        std::io::stdin().read_line(&mut input).expect("failed to read input");
+        if !input.trim().eq_ignore_ascii_case("y") {
+            println!("Aborted.");
+            process::exit(0);
+        }
+    }
+
+    if !dry_run {
+        let new_changelog = changelog.replace(
+            unreleased_heading,
+            &format!("{unreleased_heading}\n\n## [{version}]"),
+        );
+        fs::write(&changelog_path, new_changelog).expect("failed to write CHANGELOG.md");
+        println!("Updated CHANGELOG.md: moved unreleased to [{version}]");
+    } else {
+        println!("Would update CHANGELOG.md: move unreleased to [{version}]");
+    }
 
     // Update version in extension.toml
-    let mut ext_doc = ext_content.parse::<DocumentMut>().expect("invalid TOML");
-    ext_doc["version"] = toml_edit::value(version);
-    fs::write(&ext_path, ext_doc.to_string()).expect("failed to write extension.toml");
-    println!("Updated extension.toml version to {version}");
+    if !dry_run {
+        let mut ext_doc = ext_content.parse::<DocumentMut>().expect("invalid TOML");
+        ext_doc["version"] = toml_edit::value(version);
+        fs::write(&ext_path, ext_doc.to_string()).expect("failed to write extension.toml");
+        println!("Updated extension.toml version to {version}");
+    } else {
+        println!("Would update extension.toml version to {version}");
+    }
 
     // Update version in Cargo.toml
-    let cargo_path = root.join("Cargo.toml");
-    let cargo_content = fs::read_to_string(&cargo_path).expect("failed to read Cargo.toml");
-    let mut cargo_doc = cargo_content.parse::<DocumentMut>().expect("invalid TOML");
-    cargo_doc["package"]["version"] = toml_edit::value(version);
-    fs::write(&cargo_path, cargo_doc.to_string()).expect("failed to write Cargo.toml");
-    println!("Updated Cargo.toml version to {version}");
+    if !dry_run {
+        let cargo_path = root.join("Cargo.toml");
+        let cargo_content = fs::read_to_string(&cargo_path).expect("failed to read Cargo.toml");
+        let mut cargo_doc = cargo_content.parse::<DocumentMut>().expect("invalid TOML");
+        cargo_doc["package"]["version"] = toml_edit::value(version);
+        fs::write(&cargo_path, cargo_doc.to_string()).expect("failed to write Cargo.toml");
+        println!("Updated Cargo.toml version to {version}");
+    } else {
+        println!("Would update Cargo.toml version to {version}");
+    }
 
     // Run lints
     println!("\nLinting...");
@@ -218,18 +251,23 @@ fn release(version: &str) {
     run_cmd(&root, "cargo", &["test", "--package", "xtask"]);
 
     // Git commit, tag, push
-    println!("\nCommitting...");
-    run_cmd(&root, "git", &["add", "extension.toml", "Cargo.toml", "Cargo.lock", "CHANGELOG.md"]);
-    run_cmd(&root, "git", &["commit", "-m", &format!("Release v{version}")]);
+    if !dry_run {
+        println!("\nCommitting...");
+        run_cmd(&root, "git", &["add", "extension.toml", "Cargo.toml", "Cargo.lock", "CHANGELOG.md"]);
+        run_cmd(&root, "git", &["commit", "-m", &format!("Release v{version}")]);
 
-    println!("Tagging {tag}...");
-    run_cmd(&root, "git", &["tag", &tag]);
+        println!("Tagging {tag}...");
+        run_cmd(&root, "git", &["tag", &tag]);
 
-    println!("Pushing...");
-    run_cmd(&root, "git", &["push"]);
-    run_cmd(&root, "git", &["push", "origin", &tag]);
+        println!("Pushing...");
+        run_cmd(&root, "git", &["push"]);
+        run_cmd(&root, "git", &["push", "origin", &tag]);
 
-    println!("\nReleased v{version}");
+        println!("\nReleased v{version}");
+    } else {
+        println!("\nWould commit, tag {tag}, and push");
+        println!("\nDry run complete. All checks passed.");
+    }
 }
 
 fn run_cmd(dir: &PathBuf, cmd: &str, args: &[&str]) {
