@@ -33,3 +33,7 @@ Create a release (updates versions, builds, tests, commits, tags, and pushes):
 ```bash
 cargo xtask release 0.2.18
 ```
+
+## License
+
+[MIT](LICENSE)

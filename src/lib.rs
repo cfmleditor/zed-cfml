@@ -91,6 +91,22 @@ impl CfmlExtension {
 
             zed::make_file_executable(&binary_path)
                 .map_err(|e| format!("failed to make executable: {e}"))?;
+
+            // Clean up old version directories, ignoring errors
+            if let Ok(entries) = std::fs::read_dir(".") {
+                for entry in entries.flatten() {
+                    let path = entry.path();
+                    let name = entry.file_name();
+                    let name = name.to_string_lossy();
+                    if name.starts_with("cfmleditor-lsp-")
+                        && name.as_ref() != version_dir
+                        && path.is_dir()
+                        && !path.is_symlink()
+                    {
+                        let _ = std::fs::remove_dir_all(&path);
+                    }
+                }
+            }
         }
 
         self.cached_binary_path = Some(binary_path.clone());

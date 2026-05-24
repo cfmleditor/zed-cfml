@@ -10,11 +10,19 @@
 
 ; Indent inside HTML elements
 (element) @indent
+(self_closing_tag) @outdent
 
-; Indent/outdent for braces
-("{") @indent
-("}") @outdent
+; Blocks
+(statement_block) @indent
+("}" @end) @outdent
 
-; Indent/outdent for parentheses
-("(") @indent
-(")") @outdent
+; Arrays and objects
+(array) @indent
+(object) @indent
+("]" @end) @outdent
+
+; Parentheses
+(arguments) @indent
+(formal_parameters) @indent
+(parenthesized_expression) @indent
+(")" @end) @outdent
