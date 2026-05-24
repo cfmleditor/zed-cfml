@@ -12,15 +12,15 @@ languages = ["CFML (Tag)", "CFML (Script)", "CFML (Query)"]
 
 [grammars.cfml]
 repository = "https://github.com/cfmleditor/tree-sitter-cfml"
-rev = "6b4a43943c191950ee2c77f7b94cec5e903318a4"
+rev = "4ae0299d53609849ddace1dc8bfc8548e34a010b"
 path = "./cfml"
 
 [grammars.cfscript]
 repository = "https://github.com/cfmleditor/tree-sitter-cfml"
-rev = "6b4a43943c191950ee2c77f7b94cec5e903318a4"
+rev = "4ae0299d53609849ddace1dc8bfc8548e34a010b"
 path = "./cfscript"
 
 [grammars.cfquery]
 repository = "https://github.com/cfmleditor/tree-sitter-cfml"
-rev = "6b4a43943c191950ee2c77f7b94cec5e903318a4"
+rev = "4ae0299d53609849ddace1dc8bfc8548e34a010b"
 path = "./cfquery"
