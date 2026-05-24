@@ -22,7 +22,6 @@
 ("]" @end) @outdent
 
 ; Parentheses
-(arguments) @indent
 (formal_parameters) @indent
+(arguments) @indent
 (parenthesized_expression) @indent
-(")" @end) @outdent

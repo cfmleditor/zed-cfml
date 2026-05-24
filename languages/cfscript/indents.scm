@@ -7,11 +7,10 @@
 (object) @indent
 ("]" @end) @outdent
 
-; Parentheses
-(arguments) @indent
+; Parentheses (multi-line)
 (formal_parameters) @indent
+(arguments) @indent
 (parenthesized_expression) @indent
-(")" @end) @outdent
 
 ; Switch cases
 (switch_case) @indent
