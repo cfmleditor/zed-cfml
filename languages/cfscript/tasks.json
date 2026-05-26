@@ -1,0 +1,17 @@
+[
+  {
+    "label": "CFML: Scan Workspace for Parse Errors",
+    "command": "cfmleditor-lsp",
+    "args": ["scan", "$ZED_WORKTREE_ROOT"]
+  },
+  {
+    "label": "CFML: Scan Current File for Parse Errors",
+    "command": "cfmleditor-lsp",
+    "args": ["scan", "$ZED_FILE"]
+  },
+  {
+    "label": "CFML: Format Current File",
+    "command": "cfmleditor-lsp",
+    "args": ["format", "-w", "$ZED_FILE"]
+  }
+]
