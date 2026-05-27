@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.2.21]
+
 ### Added
 
 - Text objects (`textobjects.scm`) for Vim-style selection in all languages
