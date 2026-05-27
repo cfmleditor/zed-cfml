@@ -43,3 +43,24 @@
  (#set! injection.language "cfquery"))
 
 ((cf_query_content) @injection.content (#set! injection.language "CFML (Query)"))
+
+;; cfsavecontent body injections
+((cf_savecontent_body_script
+  (cf_savecontent_content) @injection.content)
+ (#set! injection.language "javascript"))
+
+((cf_savecontent_body_css
+  (cf_savecontent_content) @injection.content)
+ (#set! injection.language "css"))
+
+((cf_savecontent_body_xml
+  (cf_savecontent_content) @injection.content)
+ (#set! injection.language "xml"))
+
+((cf_savecontent_body_html
+  (cf_savecontent_content) @injection.content)
+ (#set! injection.language "html"))
+
+((cf_savecontent_body_sql
+  (cf_savecontent_content) @injection.content)
+ (#set! injection.language "cfquery"))

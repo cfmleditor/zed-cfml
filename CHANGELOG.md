@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Text objects (`textobjects.scm`) for Vim-style selection in all languages
+- Scope overrides (`overrides.scm`) to suppress autocomplete in comments and strings
+- `cargo xtask lint` standalone command
+- `--dry-run` flag for `cargo xtask release`
+- CI workflow to create GitHub Release with changelog notes on tag push
+- Old LSP version cleanup after downloading a new version
+
+### Changed
+
+- Refined indentation rules for cfscript and cfml
+- Release command now checks for uncommitted changes, existing tags, version ordering, and remote sync
+- Release command prompts for confirmation before proceeding
+
+### Fixed
+
+- Clippy lint warnings in `src/lib.rs`
+
 ## [0.2.20]
 
 - Update tree-sitter-cfml grammar
