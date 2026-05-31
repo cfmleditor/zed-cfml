@@ -65,6 +65,74 @@ fn update_grammar(use_commit: bool) {
 
     fs::write(&toml_path, doc.to_string()).expect("failed to write extension.toml");
     println!("\nUpdated {}", toml_path.display());
+
+    // Sync query files from tree-sitter-cfml at the new rev
+    let cfml_rev = doc["grammars"]["cfml"]["rev"].as_str().unwrap().to_string();
+    sync_queries(&cfml_rev);
+}
+
+fn sync_queries(rev: &str) {
+    let root = workspace_root();
+    let base_url = format!(
+        "https://raw.githubusercontent.com/cfmleditor/tree-sitter-cfml/{rev}"
+    );
+
+    // Map: (grammar, source query file) → destination in languages/
+    let copies = [
+        ("cfml", "highlights.scm"),
+        ("cfml", "indents.scm"),
+        ("cfml", "injections.scm"),
+        ("cfml", "folds.scm"),
+        ("cfml", "outline.scm"),
+        ("cfml", "overrides.scm"),
+        ("cfml", "textobjects.scm"),
+        ("cfscript", "highlights.scm"),
+        ("cfscript", "indents.scm"),
+        ("cfscript", "folds.scm"),
+        ("cfscript", "outline.scm"),
+        ("cfscript", "overrides.scm"),
+        ("cfscript", "textobjects.scm"),
+        ("cfquery", "highlights.scm"),
+        ("cfquery", "indents.scm"),
+        ("cfquery", "folds.scm"),
+        ("cfquery", "outline.scm"),
+        ("cfquery", "overrides.scm"),
+        ("cfquery", "textobjects.scm"),
+    ];
+
+    for (grammar, file) in &copies {
+        let url = format!("{base_url}/{grammar}/queries/{file}");
+        let content = fetch_text(&url);
+
+        let dest = root.join("languages").join(grammar).join(file);
+        let output = if *file == "injections.scm" {
+            convert_injection_languages(&content)
+        } else {
+            content
+        };
+
+        fs::write(&dest, output).unwrap_or_else(|e| panic!("failed to write {}: {e}", dest.display()));
+        println!("  synced {grammar}/{file}");
+    }
+
+    println!("\nQuery files synced from rev {}", &rev[..8]);
+}
+
+/// Convert grammar names to Zed language names in injections.scm
+fn convert_injection_languages(content: &str) -> String {
+    content
+        .replace("\"cfscript\"", "\"CFML (Script)\"")
+        .replace("\"cfquery\"", "\"CFML (Query)\"")
+}
+
+fn fetch_text(url: &str) -> String {
+    ureq::get(url)
+        .header("User-Agent", "zed-cfml-xtask")
+        .call()
+        .unwrap_or_else(|e| panic!("failed to fetch {url}: {e}"))
+        .body_mut()
+        .read_to_string()
+        .unwrap_or_else(|e| panic!("failed to read response from {url}: {e}"))
 }
 
 fn resolve_rev(owner_repo: &str, use_commit: bool) -> String {

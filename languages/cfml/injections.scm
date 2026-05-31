@@ -30,19 +30,16 @@
 
 ((cf_script_tag
   (cf_script_content) @injection.content)
- (#set! injection.language "cfscript"))
- 
-((cf_script_content) @injection.content (#set! injection.language "CFML (Script)"))
+ (#set! injection.language "CFML (Script)"))
 
 ((component_file
   (cf_component_content) @injection.content)
  (#set! injection.language "CFML (Script)"))
 
+;; SQL inside cfquery bodies
 ((cf_query_tag
   (cf_query_content) @injection.content)
- (#set! injection.language "cfquery"))
-
-((cf_query_content) @injection.content (#set! injection.language "CFML (Query)"))
+ (#set! injection.language "CFML (Query)"))
 
 ;; cfsavecontent body injections
 ((cf_savecontent_body_script
@@ -63,4 +60,4 @@
 
 ((cf_savecontent_body_sql
   (cf_savecontent_content) @injection.content)
- (#set! injection.language "cfquery"))
+ (#set! injection.language "CFML (Query)"))
