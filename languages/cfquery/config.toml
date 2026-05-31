@@ -13,3 +13,9 @@ brackets = [
 ]
 prettier_parser_name = "cfquery"
 word_characters = ["-"]
+
+[overrides.comment]
+word_characters = []
+
+[overrides.string]
+word_characters = []

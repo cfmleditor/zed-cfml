@@ -77,42 +77,42 @@ fn sync_queries(rev: &str) {
         "https://raw.githubusercontent.com/cfmleditor/tree-sitter-cfml/{rev}"
     );
 
-    // Map: (grammar, source query file) → destination in languages/
-    let copies = [
-        ("cfml", "highlights.scm"),
-        ("cfml", "indents.scm"),
-        ("cfml", "injections.scm"),
-        ("cfml", "folds.scm"),
-        ("cfml", "outline.scm"),
-        ("cfml", "overrides.scm"),
-        ("cfml", "textobjects.scm"),
-        ("cfscript", "highlights.scm"),
-        ("cfscript", "indents.scm"),
-        ("cfscript", "folds.scm"),
-        ("cfscript", "outline.scm"),
-        ("cfscript", "overrides.scm"),
-        ("cfscript", "textobjects.scm"),
-        ("cfquery", "highlights.scm"),
-        ("cfquery", "indents.scm"),
-        ("cfquery", "folds.scm"),
-        ("cfquery", "outline.scm"),
-        ("cfquery", "overrides.scm"),
-        ("cfquery", "textobjects.scm"),
+    // Map: (grammar, source query file, destination file) → destination in languages/
+    let copies: &[(&str, &str, &str)] = &[
+        ("cfml", "highlights.scm", "highlights.scm"),
+        ("cfml", "indents-zed.scm", "indents.scm"),
+        ("cfml", "injections.scm", "injections.scm"),
+        ("cfml", "outline.scm", "outline.scm"),
+        ("cfml", "overrides.scm", "overrides.scm"),
+        ("cfml", "textobjects.scm", "textobjects.scm"),
+        ("cfscript", "highlights.scm", "highlights.scm"),
+        ("cfscript", "indents-zed.scm", "indents.scm"),
+        ("cfscript", "outline.scm", "outline.scm"),
+        ("cfscript", "overrides.scm", "overrides.scm"),
+        ("cfscript", "textobjects.scm", "textobjects.scm"),
+        ("cfquery", "highlights.scm", "highlights.scm"),
+        ("cfquery", "indents-zed.scm", "indents.scm"),
+        ("cfquery", "outline.scm", "outline.scm"),
+        ("cfquery", "overrides.scm", "overrides.scm"),
+        ("cfquery", "textobjects.scm", "textobjects.scm"),
     ];
 
-    for (grammar, file) in &copies {
-        let url = format!("{base_url}/{grammar}/queries/{file}");
+    for (grammar, src_file, dest_file) in copies {
+        let url = format!("{base_url}/{grammar}/queries/{src_file}");
         let content = fetch_text(&url);
 
-        let dest = root.join("languages").join(grammar).join(file);
-        let output = if *file == "injections.scm" {
+        let dest = root.join("languages").join(grammar).join(dest_file);
+        let output = if *dest_file == "injections.scm" {
             convert_injection_languages(&content)
         } else {
             content
         };
+        let output = output.replace("@dedent", "@outdent");
+        let output = output.replace("@indent.begin", "@indent");
+        let output = output.replace("@indent.end", "@end");
 
         fs::write(&dest, output).unwrap_or_else(|e| panic!("failed to write {}: {e}", dest.display()));
-        println!("  synced {grammar}/{file}");
+        println!("  synced {grammar}/{dest_file}");
     }
 
     println!("\nQuery files synced from rev {}", &rev[..8]);

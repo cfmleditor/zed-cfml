@@ -24,3 +24,9 @@ brackets = [
 ]
 prettier_parser_name = "cfscript"
 word_characters = ["-"]
+
+[overrides.comment]
+word_characters = []
+
+[overrides.string]
+word_characters = []
