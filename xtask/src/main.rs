@@ -113,6 +113,19 @@ fn sync_queries(rev: &str) {
         let output = output.replace("@dedent", "@outdent");
         let output = output.replace("@indent.begin", "@indent");
         let output = output.replace("@indent.end", "@end");
+        // Convert highlight captures to Zed-compatible names
+        let output = output.replace("@comment.documentation", "@comment.doc");
+        let output = output.replace("@string.regexp", "@string.regex");
+        let output = output.replace("@variable.builtin", "@variable.special");
+        let output = output.replace("@doctype", "@tag.doctype");
+        let output = output.replace("@keyword.directive", "@preproc");
+        let output = output.replace("@keyword.conditional.ternary", "@keyword");
+        let output = output.replace("@function.method.call", "@function");
+        let output = output.replace("@function.method", "@function");
+        let output = output.replace("@function.call", "@function");
+        let output = output.replace("@tag.error", "@tag");
+        let output = output.replace("@character.special", "@string.special");
+        let output = output.replace("@text", "@text.literal");
 
         fs::write(&dest, output).unwrap_or_else(|e| panic!("failed to write {}: {e}", dest.display()));
         println!("  synced {grammar}/{dest_file}");

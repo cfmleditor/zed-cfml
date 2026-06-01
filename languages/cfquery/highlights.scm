@@ -1,5 +1,5 @@
 ; CF tags
-(erroneous_cf_end_tag_name) @tag.error
+(erroneous_cf_end_tag_name) @tag
 (cf_attribute_name) @attribute
 (attribute_value) @string
 (cf_selfclose_tag) @tag
@@ -34,19 +34,19 @@
   name: [
     (property_identifier)
     (private_property_identifier)
-  ] @function.method)
+  ] @function)
 
 (method_definition
   name: (property_identifier) @constructor
   (#eq? @constructor "constructor"))
 
 (pair
-  key: (property_identifier) @function.method
+  key: (property_identifier) @function
   value: [(function_expression) (arrow_function)])
 
 (assignment_expression
   left: (member_expression
-    property: (property_identifier) @function.method)
+    property: (property_identifier) @function)
   right: [(function_expression) (arrow_function)])
 
 (variable_declarator
@@ -59,21 +59,21 @@
 
 ; Function and method calls
 (call_expression
-  function: (identifier) @function.call)
+  function: (identifier) @function)
 
 (call_expression
   function: (member_expression
     property: [
       (property_identifier)
       (private_property_identifier)
-    ] @function.method.call))
+    ] @function))
 
 ; Literals
-((identifier) @variable.builtin
-  (#eq? @variable.builtin "self"))
+((identifier) @variable.special
+  (#eq? @variable.special "self"))
 
-(this) @variable.builtin
-(super) @variable.builtin
+(this) @variable.special
+(super) @variable.special
 
 (cf_var) @keyword
 
@@ -92,14 +92,14 @@
   (cf_comment)
 ] @comment @spell
 
-((comment) @comment.documentation
-  (#match? @comment.documentation "^/[*][*][^*].*[*]/$"))
+((comment) @comment.doc
+  (#match? @comment.doc "^/[*][*][^*].*[*]/$"))
 
 (string) @string
 (hash_empty) @punctuation.special
 
-(regex_pattern) @string.regexp
-(regex_flags) @character.special
+(regex_pattern) @string.regex
+(regex_flags) @string.special
 
 (regex
   "/" @punctuation.bracket)
@@ -131,10 +131,10 @@
   [
     "?"
     ":"
-  ] @keyword.conditional.ternary)
+  ] @keyword)
 
 (elvis_expression
-  "?:" @keyword.conditional.ternary)
+  "?:" @keyword)
 
 [
   "-"
@@ -218,7 +218,7 @@
 (query_keyword) @keyword
 
 (query_function
-  name: (query_function_name) @function.call)
+  name: (query_function_name) @function)
 
 (query_function_name) @variable
 

@@ -3,11 +3,30 @@
 
 (identifier) @variable
 
+; CFML scopes
+;-------------
+
+((identifier) @variable.special
+ (#match? @variable.special "^(?i)(APPLICATION|ARGUMENTS|CGI|CLIENT|COOKIE|FORM|LOCAL|REQUEST|SERVER|SESSION|THIS|URL|VARIABLES)$"))
+
 ; Properties
 ;-----------
 
 (property_identifier) @property
 (shorthand_property_identifier) @property
+(private_property_identifier) @property
+
+; Component and property declarations
+;-------------------------------------
+
+(component_attribute
+  (attribute_label) @attribute)
+
+(property_declaration
+  name: (identifier) @property)
+
+(spread_element
+  "..." @operator)
 
 ; Function and method definitions
 ;--------------------------------
@@ -19,15 +38,15 @@
 (function_declaration
   (access_type) @keyword)
 (method_definition
-  name: (property_identifier) @function.method)
+  name: (property_identifier) @function)
 
 (pair
-  key: (property_identifier) @function.method
+  key: (property_identifier) @function
   value: [(function_expression) (arrow_function)])
 
 (assignment_expression
   left: (member_expression
-    property: (property_identifier) @function.method)
+    property: (property_identifier) @function)
   right: [(function_expression) (arrow_function)])
 
 (variable_declarator
@@ -51,7 +70,7 @@
 
 (call_expression
   function: (member_expression
-    property: (property_identifier) @function.method))
+    property: (property_identifier) @function))
 
 ; Special identifiers
 ;--------------------
@@ -66,8 +85,8 @@
  ] @constant
  (#match? @constant "^[A-Z_][A-Z\\d_]+$"))
 
-((identifier) @variable.builtin
- (#match? @variable.builtin "^(arguments|module|console|window|document)$")
+((identifier) @variable.special
+ (#match? @variable.special "^(arguments|module|console|window|document)$")
  (#is-not? local))
 
 ((identifier) @function.builtin
@@ -77,8 +96,8 @@
 ; Literals
 ;---------
 
-(this) @variable.builtin
-(super) @variable.builtin
+(this) @variable.special
+(super) @variable.special
 (undefined) @constant.builtin
 
 [
@@ -113,14 +132,41 @@
   ","
 ] @punctuation.delimiter
 
+(ordered_struct
+  ["[" ":" "]"] @punctuation.bracket)
+
+(cfml_template
+  "```" @punctuation.delimiter)
+
 (ternary_expression
   [
     "?"
     ":"
-  ] @keyword.conditional.ternary)
+  ] @keyword)
 
 (elvis_expression
-  "?:" @keyword.conditional.ternary)
+  "?:" @keyword)
+
+; Types
+;------
+
+(parameter_type) @type
+(catch_clause
+  type: (catch_type) @type)
+
+; Tag statements
+;---------------
+
+(tag_statement
+  tag: (identifier) @keyword)
+(query_tag
+  "query" @keyword)
+
+; Imports
+;--------
+
+(import_path
+  (identifier) @module)
 
 
 [
@@ -200,6 +246,7 @@
   "if"
   "import"
   "in"
+  "include"
   "instanceof"
   "let"
   "new"
