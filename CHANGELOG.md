@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.2.23]
+
 - Update tree-sitter-grammar and .scm files
 
 ## [0.2.22]
