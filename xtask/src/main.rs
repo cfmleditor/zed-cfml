@@ -102,7 +102,10 @@ fn sync_queries(rev: &str) {
 
     for (grammar, src_file, dest_file) in copies {
         let url = format!("{base_url}/{grammar}/queries/{src_file}");
-        let content = fetch_text(&url);
+        let Some(content) = try_fetch_text(&url) else {
+            println!("  skipped {grammar}/{src_file} (not found upstream)");
+            continue;
+        };
 
         let dest = root.join("languages").join(grammar).join(dest_file);
         let output = if *dest_file == "injections.scm" {
@@ -141,14 +144,12 @@ fn convert_injection_languages(content: &str) -> String {
         .replace("\"cfquery\"", "\"CFML (Query)\"")
 }
 
-fn fetch_text(url: &str) -> String {
-    ureq::get(url)
+fn try_fetch_text(url: &str) -> Option<String> {
+    let mut response = ureq::get(url)
         .header("User-Agent", "zed-cfml-xtask")
         .call()
-        .unwrap_or_else(|e| panic!("failed to fetch {url}: {e}"))
-        .body_mut()
-        .read_to_string()
-        .unwrap_or_else(|e| panic!("failed to read response from {url}: {e}"))
+        .ok()?;
+    response.body_mut().read_to_string().ok()
 }
 
 fn resolve_rev(owner_repo: &str, use_commit: bool) -> String {
