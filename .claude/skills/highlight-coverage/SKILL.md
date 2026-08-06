@@ -71,8 +71,18 @@ target grammar.
 
 ```bash
 python3 .claude/skills/highlight-coverage/compare_languages.py cfml cfquery
+python3 .claude/skills/highlight-coverage/compare_languages.py --captures  # see below
 python3 .claude/skills/highlight-coverage/compare_languages.py            # all pairs
 ```
+
+`--captures` lists capture names no Zed theme styles. These are the blind spot
+`check_coverage.py` cannot see: the query parses, the token counts as captured, and it
+renders unstyled anyway. `(access_type) @access_type` hid in cfml this way, leaving
+`public`/`private`/`remote` uncoloured while cfscript and cfquery used `@keyword`.
+
+Read the **whole** comparison output, not just the head and tail. The two rules most
+likely to have drifted -- the CFML scopes list and the Lucee builtin-function list --
+are enormous single patterns that scroll straight past. cfquery was missing both.
 
 Two known false positives in its output, both harmless once you know them:
 

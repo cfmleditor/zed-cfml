@@ -47,9 +47,20 @@ When pulling a fix down from upstream, apply this remap:
 | `@character.special` | `@string.special` |
 | `@keyword.conditional.ternary` | `@keyword` |
 
-`languages/cfml/highlights.scm` still carries `(program) @document` and
-`(array) @expression` from upstream. Neither is a Zed theme scope, so they are no-ops.
-Harmless, but don't copy the pattern into new rules.
+`languages/cfml/highlights.scm` still carries `(program) @document`,
+`(array) @expression` and `@definition.function` from upstream, and cfml and cfquery
+both use `@spell`. None is a Zed theme scope, so they are no-ops: the query parses, the
+token counts as captured, and it renders unstyled. That makes them invisible to
+`check_coverage.py`, which is how `(access_type) @access_type` sat in cfml leaving
+`public`/`private`/`remote` unstyled while the other two languages used `@keyword`.
+Run `compare_languages.py --captures` to list them; don't copy the pattern into new rules.
+
+**The three languages must keep two big rules in sync**: the CFML scopes list
+(`APPLICATION|ARGUMENTS|CGI|...` → `@variable.special`) and the Lucee builtin-function
+list (→ `@function.builtin`). Both are reachable in all three languages, since cfquery
+embeds CFML expressions in `#...#`. cfquery had neither until they were ported across,
+and cfml's builtin list had drifted 166 functions behind cfscript's. cfscript is the
+canonical copy; when updating, copy from there.
 
 All grammar checkouts under `grammars/` must sit at the same revision as the three
 `[grammars.*]` entries in `extension.toml`. Verify before trusting any analysis of

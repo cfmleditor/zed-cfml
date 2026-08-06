@@ -22,6 +22,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - cfml: `#var#` hash delimiters in tag bodies, `cfsavecontent` tag delimiters, CDATA sections
 - cfml and cfquery: `<=`, `>=`, `<>`, `<<`, `>>` and `>>>` operators
 - All three: destructured property names; `default`/`in` keywords in cfquery
+- cfquery: CFML scopes (`ARGUMENTS`, `SESSION`, `FORM`, `CGI`, ...) and Lucee built-in
+  functions, neither of which it had at all
+- cfml: built-in function list was 166 functions behind cfscript's
+- cfml: `access_type` (`public`/`private`/`remote`) used a capture name Zed does not
+  style, so it rendered unstyled
 - cfscript: removed the `target` keyword, which no longer exists in the grammar
 
 ## [0.2.23]

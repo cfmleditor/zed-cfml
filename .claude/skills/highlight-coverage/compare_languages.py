@@ -56,9 +56,29 @@ def grammar_nodes(lang):
             {t["type"] for t in types if not t.get("named")})
 
 
+def strip_predicates(text):
+    """Drop comments and `(#match? ...)` style predicates.
+
+    Predicate arguments are strings, and a regex argument such as
+    "^(?i)(APPLICATION|ARGUMENTS|...)$" otherwise reads as an anonymous node
+    reference, which silently drops the whole pattern from the comparison. Strings are
+    blanked to a same-length placeholder first so that a `)` inside one cannot end a
+    predicate early, then predicate spans are cut from the original by index.
+    """
+    body = re.sub(r"(?m);.*$", "", text)
+    blanked = re.sub(r'"(?:[^"\\]|\\.)*"',
+                     lambda m: '"' + "\0" * (len(m.group(0)) - 2) + '"', body)
+    out, last = [], 0
+    for m in re.finditer(r"\(#[^)]*\)", blanked):
+        out.append(body[last:m.start()])
+        last = m.end()
+    out.append(body[last:])
+    return "".join(out)
+
+
 def referenced(text):
     """Node types a pattern mentions, named and anonymous."""
-    body = re.sub(r"(?m);.*$", "", text)
+    body = strip_predicates(text)
     named = set(re.findall(r"\(\s*([a-z_][a-z0-9_]*)\b", body)) - NOT_NODES
     return named, set(re.findall(r'"((?:[^"\\]|\\.)*)"', body))
 
@@ -93,12 +113,41 @@ def compare(base, other):
     return hits
 
 
+# Capture names Zed themes actually style. A capture outside this set parses fine and
+# highlights nothing, so it is invisible to check_coverage.py -- the token counts as
+# covered while rendering unstyled. `@access_type` in cfml was exactly this.
+ZED_CAPTURES = {
+    "attribute", "boolean", "comment", "comment.doc", "constant", "constant.builtin",
+    "constructor", "embedded", "emphasis", "emphasis.strong", "enum", "function",
+    "function.builtin", "function.definition", "function.method", "hint", "keyword",
+    "label", "link_text", "link_uri", "module", "number", "operator", "predictive",
+    "preproc", "primary", "property", "punctuation", "punctuation.bracket",
+    "punctuation.delimiter", "punctuation.list_marker", "punctuation.special", "string",
+    "string.escape", "string.regex", "string.special", "string.special.symbol", "tag",
+    "tag.doctype", "text.literal", "title", "type", "variable", "variable.special",
+    "variant",
+}
+
+
+def audit_captures():
+    """Report capture names that no Zed theme styles."""
+    print(f"\n{'=' * 78}\ncapture names Zed does not style\n{'=' * 78}")
+    for lang in LANGS:
+        used = set(re.findall(r"@([a-z._][a-zA-Z._]*)",
+                              open(f"{REPO}/languages/{lang}/highlights.scm").read()))
+        unknown = sorted(used - ZED_CAPTURES)
+        print(f"  {lang:9} {', '.join(unknown) if unknown else '(all styled)'}")
+
+
 if __name__ == "__main__":
     args = sys.argv[1:]
-    if len(args) == 2:
+    if args == ["--captures"]:
+        audit_captures()
+    elif len(args) == 2:
         compare(*args)
     elif args:
-        sys.exit("usage: compare_languages.py [<base> <other>]")
+        sys.exit("usage: compare_languages.py [--captures | <base> <other>]")
     else:
         for a, b in itertools.permutations(LANGS, 2):
             compare(a, b)
+        audit_captures()
