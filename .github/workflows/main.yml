@@ -30,6 +30,16 @@ jobs:
     name: Release Zed Extension
     runs-on: ubuntu-latest
     steps:
+      - name: Validate extension token can access target repo
+        run: |
+          set -e
+          TARGET_REPO="cfmleditor/extensions"
+          if ! curl -sf -H "Authorization: token $COMMITTER_TOKEN" "https://api.github.com/repos/$TARGET_REPO" >/dev/null; then
+            echo "ERROR: token cannot access $TARGET_REPO - check secret and token scopes/permissions"
+            exit 1
+          fi
+        env:
+          COMMITTER_TOKEN: ${{ secrets.ZED_EXTENSION_TOKEN }}
       - uses: huacnlee/zed-extension-action@v2
         with:
           extension-name: cfml
