@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- SQL and tag injections for cfscript (`queryExecute("...")` bodies and ` ``` ` template blocks)
+- `cf_comment` highlighting, overrides, and text objects for cfscript
+
+### Fixed
+
+- cfscript: unary operators (`!`, `~`, `NOT`), shift and Lucee inequality operators (`<<`, `>>`, `>>>`, `<>`)
+- cfscript: `abstract`, `final`, `interface`, `property` and `required` keywords
+- cfscript: colons in switch cases, struct pairs, slices, labels and namespaced component attributes
+- cfscript: `queryExecute` builtin, regex pattern/flag scopes, docblock comments, destructured property names
+- cfquery: quote delimiters on quoted values; backtick- and bracket-quoted identifiers
+- cfquery: `cfoutput`/`cfreturn` tag delimiters and spread operators
+- cfml: `#var#` hash delimiters in tag bodies, `cfsavecontent` tag delimiters, CDATA sections
+- cfml and cfquery: `<=`, `>=`, `<>`, `<<`, `>>` and `>>>` operators
+- All three: destructured property names; `default`/`in` keywords in cfquery
+- cfscript: removed the `target` keyword, which no longer exists in the grammar
+
 ## [0.2.23]
 
 - Update tree-sitter-grammar and .scm files

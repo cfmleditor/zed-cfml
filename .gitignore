@@ -27,3 +27,4 @@ Temporary Items
 .apdisk
 grammars
 target
+__pycache__/

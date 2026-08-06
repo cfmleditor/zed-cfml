@@ -14,6 +14,7 @@
 
 (property_identifier) @property
 (shorthand_property_identifier) @property
+(shorthand_property_identifier_pattern) @property
 (private_property_identifier) @property
 
 ; Component and property declarations
@@ -21,6 +22,10 @@
 
 (component_attribute
   (attribute_label) @attribute)
+
+; Namespaced attributes, e.g. `component test:displayLabel="..."`
+(component_attribute
+  ":" @punctuation.delimiter)
 
 (property_declaration
   name: (identifier) @property)
@@ -108,6 +113,10 @@
 ] @constant.builtin
 
 (comment) @comment
+(cf_comment) @comment
+
+((comment) @comment.doc
+  (#match? @comment.doc "^/[*][*][^*].*[*]/$"))
 
 [
   (string)
@@ -118,7 +127,12 @@
   "#" @punctuation.special)
 (hash_empty) @punctuation.special
 
-(regex) @string.special
+(regex_pattern) @string.regex
+(regex_flags) @string.special
+
+(regex
+  "/" @punctuation.bracket) ; Regex delimiters
+
 (number) @number
 
 ; Tokens
@@ -135,8 +149,22 @@
 (ordered_struct
   ["[" ":" "]"] @punctuation.bracket)
 
+(pair
+  ":" @punctuation.delimiter)
+(pair_pattern
+  ":" @punctuation.delimiter)
+(switch_case
+  ":" @punctuation.delimiter)
+(switch_default
+  ":" @punctuation.delimiter)
+(labeled_statement
+  ":" @punctuation.delimiter)
+(slice_expression
+  ":" @punctuation.delimiter)
+
 (cfml_template
   "```" @punctuation.delimiter)
+(cfml_template_content) @embedded
 
 (ternary_expression
   [
@@ -153,6 +181,8 @@
 (parameter_type) @type
 (catch_clause
   type: (catch_type) @type)
+(property_declaration
+  type: [(identifier) (path)] @type)
 
 ; Tag statements
 ;---------------
@@ -161,6 +191,17 @@
   tag: (identifier) @keyword)
 (query_tag
   "query" @keyword)
+
+; Inline queries
+;---------------
+
+; Unparented so the keyword stays highlighted mid-typing, while the string is still
+; unterminated and the whole call sits inside an ERROR node.
+"queryExecute" @function.builtin
+
+(query_expression
+  ["\"" "'"] @punctuation.delimiter)
+(query_text) @embedded
 
 ; Imports
 ;--------
@@ -186,6 +227,8 @@
   "%="
   "<"
   "<="
+  "<>"
+  "<<"
   "<<="
   "="
   "=="
@@ -195,7 +238,9 @@
   "=>"
   ">"
   ">="
+  ">>"
   ">>="
+  ">>>"
   ">>>="
   "^"
   "&"
@@ -212,6 +257,8 @@
   "??="
 ] @operator
 
+(unary_operator) @operator
+
 [
   "("
   ")"
@@ -226,6 +273,7 @@
   "}" @punctuation.special) @embedded
 
 [
+  "abstract"
   "as"
   "break"
   "case"
@@ -238,6 +286,7 @@
   "do"
   "else"
   "export"
+  "final"
   "finally"
   "for"
   "from"
@@ -248,15 +297,17 @@
   "in"
   "include"
   "instanceof"
+  "interface"
   "let"
   "new"
   "of"
+  "property"
   "query"
+  "required"
   "return"
   "set"
   "static"
   "switch"
-  "target"
   "throw"
   "try"
   "var"

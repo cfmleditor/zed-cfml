@@ -4,6 +4,10 @@
 (entity) @constant
 (html_text) @text.literal
 
+(cdata_section
+  ["<![CDATA[" "]]>"] @punctuation.special)
+(cdata_text) @text.literal
+
 (erroneous_end_tag_name) @tag
 (erroneous_cf_end_tag_name) @tag
 (attribute_name) @attribute
@@ -23,6 +27,7 @@
 (cf_end_tag) @tag
 (cf_if_tag) @tag
 (cf_query_tag) @tag
+(cf_savecontent_tag) @tag
 (cf_else_tag) @tag
 (cf_elseif_tag) @tag
 (cf_return_tag) @tag
@@ -50,6 +55,8 @@
 (property_identifier) @property
 
 (shorthand_property_identifier) @property
+
+(shorthand_property_identifier_pattern) @property
 
 ; Function and method definitions
 ;--------------------------------
@@ -162,6 +169,7 @@
 (string) @string
 (text) @string
 (hash_empty) @punctuation.special
+(hash_single) @punctuation.special
 
 (regex_pattern) @string.regex
 (regex_flags) @string.special
@@ -234,6 +242,9 @@
   "%"
   "%="
   "<"
+  "<="
+  "<>"
+  "<<"
   "<<="
   "="
   "=="
@@ -243,7 +254,10 @@
   "!=="
   "=>"
   ">"
+  ">="
+  ">>"
   ">>="
+  ">>>"
   ">>>="
   "~"
   "^"

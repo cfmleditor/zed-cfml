@@ -11,6 +11,8 @@
 (cf_start_tag) @tag
 (cf_end_tag) @tag
 (cf_tag) @tag
+(cf_output_tag) @tag
+(cf_return_tag) @tag
 (cf_tag_name) @tag
 
 ; Variables
@@ -19,6 +21,8 @@
 ; Properties
 (property_identifier) @property
 (shorthand_property_identifier) @property
+(shorthand_property_identifier_pattern) @property
+(private_property_identifier) @property
 
 ; Function and method definitions
 (function_expression
@@ -111,6 +115,9 @@
 
 (unary_operator) @operator
 
+(spread_element
+  "..." @operator)
+
 ((identifier) @number
   (#any-of? @number "NaN" "Infinity"))
 
@@ -152,6 +159,9 @@
   "%"
   "%="
   "<"
+  "<="
+  "<>"
+  "<<"
   "<<="
   "="
   "=="
@@ -161,7 +171,10 @@
   "!=="
   "=>"
   ">"
+  ">="
+  ">>"
   ">>="
+  ">>>"
   ">>>="
   "~"
   "^"
@@ -193,12 +206,14 @@
   "do"
   "switch"
   "case"
+  "default"
   "break"
   "continue"
   "try"
   "catch"
   "finally"
   "throw"
+  "in"
   "of"
   "instanceof"
   "static"
@@ -212,6 +227,7 @@
   "]"
   "{"
   "}"
+  "</"
 ] @punctuation.bracket
 
 ; SQL keywords and identifiers
@@ -238,14 +254,23 @@
 (query_comparison_expression
   operator: _ @operator)
 
-(quoted_query_value
-  (query_value) @string)
-(double_quoted_query_value
-  (query_value) @string)
+; Quoted values: capture the whole node so the delimiters are styled too
+[
+  (quoted_query_value)
+  (double_quoted_query_value)
+] @string
+
+; Backticks and brackets quote an identifier, not a string literal
+(backtick_quoted_query_value
+  (query_value) @variable)
+(backtick_quoted_query_value
+  "`" @punctuation.bracket)
 
 (query_comma) @punctuation.delimiter
 (query_semicolon) @punctuation.delimiter
 
+(bracketed_query_value
+  (query_value) @variable)
 (bracketed_query_value
   ["[" "]"] @punctuation.bracket)
 
