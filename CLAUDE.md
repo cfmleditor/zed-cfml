@@ -113,10 +113,12 @@ Learned the hard way; all verified against the pinned revision.
   `double_quoted_query_value` are string literals; `backtick_quoted_query_value` and
   `bracketed_query_value` are quoted *identifiers* and should be `@variable`. Capture
   the whole node for strings so the delimiters get styled too.
-- **`<cfscript>` is a parse error inside a cfquery body.** So `parameter_type`,
-  `catch_clause` and `import_path` are unreachable in cfquery even though they appear in
-  its `node-types.json`. Rules for them would be dead code. The shared expression
-  grammar reaches cfquery only through `#...#` hash expressions and CF tag attributes.
+- **`<cfscript>` is a parse error inside a cfquery body, but that proves nothing about
+  individual nodes.** The shared expression grammar still reaches cfquery through
+  `#...#`, and an *expression* can be script-shaped: `#f( function( string[] v ) { … } )#`
+  parses cleanly with `parameter_type` and `array_return_suffix` both present. Reasoning
+  "no `<cfscript>`, therefore no script nodes" is how cfquery went without those rules.
+  Probe the node you care about; do not generalise from the tag.
 - **`hash_single` is not `hash_expression`.** The `#` delimiters around a bare `#var#`
   in a tag body are their own node, so a rule on `hash_expression` misses them. cfml
   only; cfscript and cfquery have `hash_empty` but not `hash_single`.

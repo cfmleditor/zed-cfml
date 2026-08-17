@@ -89,9 +89,15 @@ Two known false positives in its output, both harmless once you know them:
 - cfml spells alternations as separate patterns (`value: (function_expression)` then
   `value: (arrow_function)`) where cfquery uses one `[(function_expression) (arrow_function)]`.
   The normaliser does not see those as equal.
-- A node type can exist in `node-types.json` and still be unreachable. `parameter_type`,
-  `catch_clause` and `import_path` all appear in the cfquery grammar, but `<cfscript>`
-  is a parse error inside a cfquery body, so rules for them would be dead code.
+- A node type can exist in `node-types.json` and still be unreachable, so the report is
+  a list of candidates rather than a list of gaps.
+
+**Reachability cuts both ways, and guessing it is how rules get wrongly dropped.**
+`parameter_type` and `array_return_suffix` were left out of cfquery on the reasoning
+that `<cfscript>` is a parse error inside a cfquery body. It is — but the shared
+expression grammar still reaches cfquery through `#...#`, and
+`#f( function( string[] v ) { … } )#` parses cleanly with both nodes present. Coverage
+never caught it either, because no corpus snippet contains that shape.
 
 **Always confirm with a probe file before adding a rule.** Write the construct, run
 `check_coverage.py <lang> probe.<ext>`, and only add the rule if the token actually shows
