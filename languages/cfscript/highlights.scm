@@ -179,6 +179,9 @@
 ;------
 
 (parameter_type) @type
+; `User[] function getUsers()` is one token, so the anonymous
+; "[" / "]" operator rule cannot reach it.
+(array_return_suffix) @punctuation.bracket
 (catch_clause
   type: (catch_type) @type)
 (property_declaration
@@ -236,6 +239,7 @@
   "!="
   "!=="
   "=>"
+  "->"
   ">"
   ">="
   ">>"
@@ -315,3 +319,6 @@
   "while"
   "with"
 ] @keyword
+
+; Lucee object selector, e.g. `new java:java.io.File(...)`
+(type_prefix) @keyword

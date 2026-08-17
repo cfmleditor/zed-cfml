@@ -179,6 +179,7 @@
   "!="
   "!=="
   "=>"
+  "->"
   ">"
   ">="
   ">>"
@@ -293,3 +294,6 @@
 
 (query_open_paren) @punctuation.bracket
 (query_close_paren) @punctuation.bracket
+
+; Lucee object selector, e.g. `new java:java.io.File(...)`
+(type_prefix) @keyword

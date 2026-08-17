@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Highlights for the new grammar's `->` operator, `array_return_suffix`
+  (`User[] function getUsers()`) and `type_prefix` (`new java:java.io.File(...)`)
+
+### Changed
+
+- Update `tree-sitter-cfml` grammar
+
 ## [0.2.24]
 
 ### Added
