@@ -97,6 +97,42 @@ what makes `explain <file> <line>` work from the cursor. Note `$ZED_SYMBOL` is t
 empty or resolve to the enclosing function — `$ZED_SELECTED_TEXT` is the fallback when a
 command needs an exact name.
 
+### Every task resolves the binary itself
+
+`command` is not `cfmleditor-lsp`. It cannot be: `src/lib.rs` only uses a `PATH` binary
+when `worktree.which()` finds one, and otherwise downloads its own copy into Zed's
+extension work directory, which is not on `PATH`. That is the default for every user, so
+naming the binary directly failed with `command not found` and exit 127 for anyone who had
+not installed it separately.
+
+Each task therefore opens with a resolver that prefers `PATH` and falls back to the
+downloaded copy, then `exec`s it:
+
+```sh
+CFLSP="$(command -v cfmleditor-lsp || find \
+  "$HOME/Library/Application Support/Zed/extensions/work/cfml" \
+  "$HOME/.local/share/zed/extensions/work/cfml" \
+  -name cfmleditor-lsp -type f 2>/dev/null | head -1)"
+[ -n "$CFLSP" ] || { echo "cfmleditor-lsp not found ..." >&2; exit 127; }
+exec "$CFLSP"
+```
+
+Four details that are deliberate, not incidental:
+
+- **`find`, not a glob.** Tasks run in a login shell, and zsh's `nomatch` aborts the whole
+  command on a pattern that matches nothing — which the Linux path does on a Mac. `find`
+  takes the directories as arguments, so a missing one is just a suppressed stderr line.
+- **The real arguments stay in `args`.** Zed escapes those, so paths with spaces survive;
+  embedding them in `command` would need hand-quoting. The resolver ends in `exec "$CFLSP"`
+  precisely so Zed's escaped args land as that process's arguments.
+- **`exec`, not a plain call.** The task's exit code is the tool's, so a scan that finds
+  parse errors reports them rather than the shell's own status.
+- **The not-found branch explains itself and exits 127.** The bare failure gave no clue
+  which of the two mechanisms had not happened.
+
+macOS and Linux paths are both covered. Windows still needs the binary on `PATH` — the
+resolver is POSIX shell, and Zed launches tasks there through a different shell.
+
 `CFML: Format Current File` runs `format -w`, which writes the file on disk behind Zed's
 back; with unsaved changes in the buffer the two diverge. The server implements
 `textDocument/formatting`, so `editor: format` is the safer path — the task is kept for
