@@ -1,37 +1,64 @@
 [
   {
     "label": "CFML: Scan Workspace for Parse Errors",
-    "command": "cfmleditor-lsp",
-    "args": ["scan", "$ZED_WORKTREE_ROOT"]
+    "command": "CFLSP=\"$(command -v cfmleditor-lsp || find \"$HOME/Library/Application Support/Zed/extensions/work/cfml\" \"$HOME/.local/share/zed/extensions/work/cfml\" -name cfmleditor-lsp -type f 2>/dev/null | head -1)\"; [ -n \"$CFLSP\" ] || { echo \"cfmleditor-lsp not found on PATH or in Zed's extension work dir. Open a CFML file to let the extension download it, or install it on PATH.\" >&2; exit 127; }; exec \"$CFLSP\"",
+    "args": [
+      "scan",
+      "$ZED_WORKTREE_ROOT"
+    ]
   },
   {
     "label": "CFML: Scan Current File for Parse Errors",
-    "command": "cfmleditor-lsp",
-    "args": ["scan", "$ZED_FILE"]
+    "command": "CFLSP=\"$(command -v cfmleditor-lsp || find \"$HOME/Library/Application Support/Zed/extensions/work/cfml\" \"$HOME/.local/share/zed/extensions/work/cfml\" -name cfmleditor-lsp -type f 2>/dev/null | head -1)\"; [ -n \"$CFLSP\" ] || { echo \"cfmleditor-lsp not found on PATH or in Zed's extension work dir. Open a CFML file to let the extension download it, or install it on PATH.\" >&2; exit 127; }; exec \"$CFLSP\"",
+    "args": [
+      "scan",
+      "$ZED_FILE"
+    ]
   },
   {
     "label": "CFML: Format Current File",
-    "command": "cfmleditor-lsp",
-    "args": ["format", "-w", "$ZED_FILE"]
+    "command": "CFLSP=\"$(command -v cfmleditor-lsp || find \"$HOME/Library/Application Support/Zed/extensions/work/cfml\" \"$HOME/.local/share/zed/extensions/work/cfml\" -name cfmleditor-lsp -type f 2>/dev/null | head -1)\"; [ -n \"$CFLSP\" ] || { echo \"cfmleditor-lsp not found on PATH or in Zed's extension work dir. Open a CFML file to let the extension download it, or install it on PATH.\" >&2; exit 127; }; exec \"$CFLSP\"",
+    "args": [
+      "format",
+      "-w",
+      "$ZED_FILE"
+    ]
   },
   {
     "label": "CFML: Explain Call Resolution at Cursor",
-    "command": "cfmleditor-lsp",
-    "args": ["explain", "--root", "$ZED_WORKTREE_ROOT", "$ZED_FILE", "$ZED_ROW"]
+    "command": "CFLSP=\"$(command -v cfmleditor-lsp || find \"$HOME/Library/Application Support/Zed/extensions/work/cfml\" \"$HOME/.local/share/zed/extensions/work/cfml\" -name cfmleditor-lsp -type f 2>/dev/null | head -1)\"; [ -n \"$CFLSP\" ] || { echo \"cfmleditor-lsp not found on PATH or in Zed's extension work dir. Open a CFML file to let the extension download it, or install it on PATH.\" >&2; exit 127; }; exec \"$CFLSP\"",
+    "args": [
+      "explain",
+      "--root",
+      "$ZED_WORKTREE_ROOT",
+      "$ZED_FILE",
+      "$ZED_ROW"
+    ]
   },
   {
     "label": "CFML: Unresolved Calls in Workspace",
-    "command": "cfmleditor-lsp",
-    "args": ["unresolved", "$ZED_WORKTREE_ROOT"]
+    "command": "CFLSP=\"$(command -v cfmleditor-lsp || find \"$HOME/Library/Application Support/Zed/extensions/work/cfml\" \"$HOME/.local/share/zed/extensions/work/cfml\" -name cfmleditor-lsp -type f 2>/dev/null | head -1)\"; [ -n \"$CFLSP\" ] || { echo \"cfmleditor-lsp not found on PATH or in Zed's extension work dir. Open a CFML file to let the extension download it, or install it on PATH.\" >&2; exit 127; }; exec \"$CFLSP\"",
+    "args": [
+      "unresolved",
+      "$ZED_WORKTREE_ROOT"
+    ]
   },
   {
     "label": "CFML: References to Symbol at Cursor",
-    "command": "cfmleditor-lsp",
-    "args": ["refs", "$ZED_SYMBOL", "$ZED_WORKTREE_ROOT"]
+    "command": "CFLSP=\"$(command -v cfmleditor-lsp || find \"$HOME/Library/Application Support/Zed/extensions/work/cfml\" \"$HOME/.local/share/zed/extensions/work/cfml\" -name cfmleditor-lsp -type f 2>/dev/null | head -1)\"; [ -n \"$CFLSP\" ] || { echo \"cfmleditor-lsp not found on PATH or in Zed's extension work dir. Open a CFML file to let the extension download it, or install it on PATH.\" >&2; exit 127; }; exec \"$CFLSP\"",
+    "args": [
+      "refs",
+      "$ZED_SYMBOL",
+      "$ZED_WORKTREE_ROOT"
+    ]
   },
   {
     "label": "CFML: Dependency Graph for Current File",
-    "command": "cfmleditor-lsp",
-    "args": ["deps", "--mermaid", "$ZED_FILE"]
+    "command": "CFLSP=\"$(command -v cfmleditor-lsp || find \"$HOME/Library/Application Support/Zed/extensions/work/cfml\" \"$HOME/.local/share/zed/extensions/work/cfml\" -name cfmleditor-lsp -type f 2>/dev/null | head -1)\"; [ -n \"$CFLSP\" ] || { echo \"cfmleditor-lsp not found on PATH or in Zed's extension work dir. Open a CFML file to let the extension download it, or install it on PATH.\" >&2; exit 127; }; exec \"$CFLSP\"",
+    "args": [
+      "deps",
+      "--mermaid",
+      "$ZED_FILE"
+    ]
   }
 ]
