@@ -13,5 +13,25 @@
     "label": "CFML: Format Current File",
     "command": "cfmleditor-lsp",
     "args": ["format", "-w", "$ZED_FILE"]
+  },
+  {
+    "label": "CFML: Explain Call Resolution at Cursor",
+    "command": "cfmleditor-lsp",
+    "args": ["explain", "--root", "$ZED_WORKTREE_ROOT", "$ZED_FILE", "$ZED_ROW"]
+  },
+  {
+    "label": "CFML: Unresolved Calls in Workspace",
+    "command": "cfmleditor-lsp",
+    "args": ["unresolved", "$ZED_WORKTREE_ROOT"]
+  },
+  {
+    "label": "CFML: References to Symbol at Cursor",
+    "command": "cfmleditor-lsp",
+    "args": ["refs", "$ZED_SYMBOL", "$ZED_WORKTREE_ROOT"]
+  },
+  {
+    "label": "CFML: Dependency Graph for Current File",
+    "command": "cfmleditor-lsp",
+    "args": ["deps", "--mermaid", "$ZED_FILE"]
   }
 ]
