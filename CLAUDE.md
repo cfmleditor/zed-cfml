@@ -70,6 +70,38 @@ node types:
 for d in cfml cfscript cfquery; do echo "$d: $(git -C grammars/$d rev-parse HEAD)"; done
 ```
 
+## Three copies of tasks.json
+
+`languages/<lang>/tasks.json` is how this extension exposes `cfmleditor-lsp`'s CLI
+subcommands, and it is the *only* route available: the extension API (`zed_extension_api`)
+has no way to contribute command-palette entries, so a task is the one thing that can be
+shipped and still land in front of the user. The server's `workspace/executeCommand`
+handlers are reachable only as code actions, which is a `cfmleditor-lsp` release rather
+than an extension one.
+
+Zed loads tasks per language directory, so the file is triplicated **byte-identically** —
+a CFML buffer is `CFML (Tag)`, `CFML (Script)` or `CFML (Query)` depending on the file, and
+whichever one is active is the only `tasks.json` in scope. A task added to one directory
+silently does not exist in the other two. Edit `languages/cfml/tasks.json`, then copy:
+
+```bash
+cp languages/cfml/tasks.json languages/cfscript/tasks.json
+cp languages/cfml/tasks.json languages/cfquery/tasks.json
+md5 -q languages/*/tasks.json | sort -u | wc -l   # must print 1
+```
+
+Task variables come from Zed, not from us; the useful ones here are `$ZED_FILE`,
+`$ZED_ROW`, `$ZED_WORKTREE_ROOT`, `$ZED_SYMBOL` and `$ZED_SELECTED_TEXT`. `$ZED_ROW` is
+what makes `explain <file> <line>` work from the cursor. Note `$ZED_SYMBOL` is the
+*selected symbol* from Zed's outline context, not the word under the cursor, so it can be
+empty or resolve to the enclosing function — `$ZED_SELECTED_TEXT` is the fallback when a
+command needs an exact name.
+
+`CFML: Format Current File` runs `format -w`, which writes the file on disk behind Zed's
+back; with unsaved changes in the buffer the two diverge. The server implements
+`textDocument/formatting`, so `editor: format` is the safer path — the task is kept for
+formatting a file without opening it.
+
 ## Checking for missing highlights
 
 Use the `highlight-coverage` skill (`.claude/skills/highlight-coverage/`). It carries
