@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.2.27]
+
 ### Fixed
 
 - Tasks silently doing nothing when a shell alias or function shadows
