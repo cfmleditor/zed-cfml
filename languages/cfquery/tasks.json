@@ -1,64 +1,64 @@
 [
   {
-    "label": "CFML: Scan Workspace for Parse Errors",
-    "command": "CFLSP=\"$(command -v cfmleditor-lsp || find \"$HOME/Library/Application Support/Zed/extensions/work/cfml\" \"$HOME/.local/share/zed/extensions/work/cfml\" -name cfmleditor-lsp -type f 2>/dev/null | head -1)\"; [ -n \"$CFLSP\" ] || { echo \"cfmleditor-lsp not found on PATH or in Zed's extension work dir. Open a CFML file to let the extension download it, or install it on PATH.\" >&2; exit 127; }; exec \"$CFLSP\"",
     "args": [
       "scan",
       "$ZED_WORKTREE_ROOT"
-    ]
+    ],
+    "command": "CFLSP=\"$(command -v cfmleditor-lsp 2>/dev/null)\"; case \"$CFLSP\" in /*) ;; *) CFLSP=\"\" ;; esac; [ -x \"$CFLSP\" ] || CFLSP=\"$(find \"$HOME/Library/Application Support/Zed/extensions/work/cfml\" \"$HOME/.local/share/zed/extensions/work/cfml\" -name cfmleditor-lsp \\( -type f -o -type l \\) 2>/dev/null | head -1)\"; [ -x \"$CFLSP\" ] || { echo \"cfmleditor-lsp not found on PATH or in Zed's extension work dir. Open a CFML file to let the extension download it, or install it on PATH.\" >&2; exit 127; }; exec \"$CFLSP\"",
+    "label": "CFML: Scan Workspace for Parse Errors"
   },
   {
-    "label": "CFML: Scan Current File for Parse Errors",
-    "command": "CFLSP=\"$(command -v cfmleditor-lsp || find \"$HOME/Library/Application Support/Zed/extensions/work/cfml\" \"$HOME/.local/share/zed/extensions/work/cfml\" -name cfmleditor-lsp -type f 2>/dev/null | head -1)\"; [ -n \"$CFLSP\" ] || { echo \"cfmleditor-lsp not found on PATH or in Zed's extension work dir. Open a CFML file to let the extension download it, or install it on PATH.\" >&2; exit 127; }; exec \"$CFLSP\"",
     "args": [
       "scan",
       "$ZED_FILE"
-    ]
+    ],
+    "command": "CFLSP=\"$(command -v cfmleditor-lsp 2>/dev/null)\"; case \"$CFLSP\" in /*) ;; *) CFLSP=\"\" ;; esac; [ -x \"$CFLSP\" ] || CFLSP=\"$(find \"$HOME/Library/Application Support/Zed/extensions/work/cfml\" \"$HOME/.local/share/zed/extensions/work/cfml\" -name cfmleditor-lsp \\( -type f -o -type l \\) 2>/dev/null | head -1)\"; [ -x \"$CFLSP\" ] || { echo \"cfmleditor-lsp not found on PATH or in Zed's extension work dir. Open a CFML file to let the extension download it, or install it on PATH.\" >&2; exit 127; }; exec \"$CFLSP\"",
+    "label": "CFML: Scan Current File for Parse Errors"
   },
   {
-    "label": "CFML: Format Current File",
-    "command": "CFLSP=\"$(command -v cfmleditor-lsp || find \"$HOME/Library/Application Support/Zed/extensions/work/cfml\" \"$HOME/.local/share/zed/extensions/work/cfml\" -name cfmleditor-lsp -type f 2>/dev/null | head -1)\"; [ -n \"$CFLSP\" ] || { echo \"cfmleditor-lsp not found on PATH or in Zed's extension work dir. Open a CFML file to let the extension download it, or install it on PATH.\" >&2; exit 127; }; exec \"$CFLSP\"",
     "args": [
       "format",
       "-w",
       "$ZED_FILE"
-    ]
+    ],
+    "command": "CFLSP=\"$(command -v cfmleditor-lsp 2>/dev/null)\"; case \"$CFLSP\" in /*) ;; *) CFLSP=\"\" ;; esac; [ -x \"$CFLSP\" ] || CFLSP=\"$(find \"$HOME/Library/Application Support/Zed/extensions/work/cfml\" \"$HOME/.local/share/zed/extensions/work/cfml\" -name cfmleditor-lsp \\( -type f -o -type l \\) 2>/dev/null | head -1)\"; [ -x \"$CFLSP\" ] || { echo \"cfmleditor-lsp not found on PATH or in Zed's extension work dir. Open a CFML file to let the extension download it, or install it on PATH.\" >&2; exit 127; }; exec \"$CFLSP\"",
+    "label": "CFML: Format Current File"
   },
   {
-    "label": "CFML: Explain Call Resolution at Cursor",
-    "command": "CFLSP=\"$(command -v cfmleditor-lsp || find \"$HOME/Library/Application Support/Zed/extensions/work/cfml\" \"$HOME/.local/share/zed/extensions/work/cfml\" -name cfmleditor-lsp -type f 2>/dev/null | head -1)\"; [ -n \"$CFLSP\" ] || { echo \"cfmleditor-lsp not found on PATH or in Zed's extension work dir. Open a CFML file to let the extension download it, or install it on PATH.\" >&2; exit 127; }; exec \"$CFLSP\"",
     "args": [
       "explain",
       "--root",
       "$ZED_WORKTREE_ROOT",
       "$ZED_FILE",
       "$ZED_ROW"
-    ]
+    ],
+    "command": "CFLSP=\"$(command -v cfmleditor-lsp 2>/dev/null)\"; case \"$CFLSP\" in /*) ;; *) CFLSP=\"\" ;; esac; [ -x \"$CFLSP\" ] || CFLSP=\"$(find \"$HOME/Library/Application Support/Zed/extensions/work/cfml\" \"$HOME/.local/share/zed/extensions/work/cfml\" -name cfmleditor-lsp \\( -type f -o -type l \\) 2>/dev/null | head -1)\"; [ -x \"$CFLSP\" ] || { echo \"cfmleditor-lsp not found on PATH or in Zed's extension work dir. Open a CFML file to let the extension download it, or install it on PATH.\" >&2; exit 127; }; exec \"$CFLSP\"",
+    "label": "CFML: Explain Call Resolution at Cursor"
   },
   {
-    "label": "CFML: Unresolved Calls in Workspace",
-    "command": "CFLSP=\"$(command -v cfmleditor-lsp || find \"$HOME/Library/Application Support/Zed/extensions/work/cfml\" \"$HOME/.local/share/zed/extensions/work/cfml\" -name cfmleditor-lsp -type f 2>/dev/null | head -1)\"; [ -n \"$CFLSP\" ] || { echo \"cfmleditor-lsp not found on PATH or in Zed's extension work dir. Open a CFML file to let the extension download it, or install it on PATH.\" >&2; exit 127; }; exec \"$CFLSP\"",
     "args": [
       "unresolved",
       "$ZED_WORKTREE_ROOT"
-    ]
+    ],
+    "command": "CFLSP=\"$(command -v cfmleditor-lsp 2>/dev/null)\"; case \"$CFLSP\" in /*) ;; *) CFLSP=\"\" ;; esac; [ -x \"$CFLSP\" ] || CFLSP=\"$(find \"$HOME/Library/Application Support/Zed/extensions/work/cfml\" \"$HOME/.local/share/zed/extensions/work/cfml\" -name cfmleditor-lsp \\( -type f -o -type l \\) 2>/dev/null | head -1)\"; [ -x \"$CFLSP\" ] || { echo \"cfmleditor-lsp not found on PATH or in Zed's extension work dir. Open a CFML file to let the extension download it, or install it on PATH.\" >&2; exit 127; }; exec \"$CFLSP\"",
+    "label": "CFML: Unresolved Calls in Workspace"
   },
   {
-    "label": "CFML: References to Symbol at Cursor",
-    "command": "CFLSP=\"$(command -v cfmleditor-lsp || find \"$HOME/Library/Application Support/Zed/extensions/work/cfml\" \"$HOME/.local/share/zed/extensions/work/cfml\" -name cfmleditor-lsp -type f 2>/dev/null | head -1)\"; [ -n \"$CFLSP\" ] || { echo \"cfmleditor-lsp not found on PATH or in Zed's extension work dir. Open a CFML file to let the extension download it, or install it on PATH.\" >&2; exit 127; }; exec \"$CFLSP\"",
     "args": [
       "refs",
       "$ZED_SYMBOL",
       "$ZED_WORKTREE_ROOT"
-    ]
+    ],
+    "command": "CFLSP=\"$(command -v cfmleditor-lsp 2>/dev/null)\"; case \"$CFLSP\" in /*) ;; *) CFLSP=\"\" ;; esac; [ -x \"$CFLSP\" ] || CFLSP=\"$(find \"$HOME/Library/Application Support/Zed/extensions/work/cfml\" \"$HOME/.local/share/zed/extensions/work/cfml\" -name cfmleditor-lsp \\( -type f -o -type l \\) 2>/dev/null | head -1)\"; [ -x \"$CFLSP\" ] || { echo \"cfmleditor-lsp not found on PATH or in Zed's extension work dir. Open a CFML file to let the extension download it, or install it on PATH.\" >&2; exit 127; }; exec \"$CFLSP\"",
+    "label": "CFML: References to Symbol at Cursor"
   },
   {
-    "label": "CFML: Dependency Graph for Current File",
-    "command": "CFLSP=\"$(command -v cfmleditor-lsp || find \"$HOME/Library/Application Support/Zed/extensions/work/cfml\" \"$HOME/.local/share/zed/extensions/work/cfml\" -name cfmleditor-lsp -type f 2>/dev/null | head -1)\"; [ -n \"$CFLSP\" ] || { echo \"cfmleditor-lsp not found on PATH or in Zed's extension work dir. Open a CFML file to let the extension download it, or install it on PATH.\" >&2; exit 127; }; exec \"$CFLSP\"",
     "args": [
       "deps",
       "--mermaid",
       "$ZED_FILE"
-    ]
+    ],
+    "command": "CFLSP=\"$(command -v cfmleditor-lsp 2>/dev/null)\"; case \"$CFLSP\" in /*) ;; *) CFLSP=\"\" ;; esac; [ -x \"$CFLSP\" ] || CFLSP=\"$(find \"$HOME/Library/Application Support/Zed/extensions/work/cfml\" \"$HOME/.local/share/zed/extensions/work/cfml\" -name cfmleditor-lsp \\( -type f -o -type l \\) 2>/dev/null | head -1)\"; [ -x \"$CFLSP\" ] || { echo \"cfmleditor-lsp not found on PATH or in Zed's extension work dir. Open a CFML file to let the extension download it, or install it on PATH.\" >&2; exit 127; }; exec \"$CFLSP\"",
+    "label": "CFML: Dependency Graph for Current File"
   }
 ]

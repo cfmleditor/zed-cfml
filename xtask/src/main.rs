@@ -21,8 +21,11 @@ struct Commit {
 fn main() {
     let args: Vec<String> = env::args().collect();
     match args.get(1).map(|s| s.as_str()) {
-        Some("update-grammar") => update_grammar(args.get(2).map(|s| s.as_str()) == Some("--commit")),
+        Some("update-grammar") => {
+            update_grammar(args.get(2).map(|s| s.as_str()) == Some("--commit"))
+        }
         Some("lint") => lint(),
+        Some("gen-tasks") => gen_tasks(args.iter().any(|a| a == "--check")),
         Some("release") => {
             let version = args.get(2).unwrap_or_else(|| {
                 eprintln!("Usage: cargo xtask release <version>");
@@ -36,6 +39,7 @@ fn main() {
             eprintln!("Usage:");
             eprintln!("  cargo xtask update-grammar [--commit]");
             eprintln!("  cargo xtask lint");
+            eprintln!("  cargo xtask gen-tasks [--check]");
             eprintln!("  cargo xtask release <version> [--dry-run]");
             process::exit(1);
         }
@@ -73,9 +77,7 @@ fn update_grammar(use_commit: bool) {
 
 fn sync_queries(rev: &str) {
     let root = workspace_root();
-    let base_url = format!(
-        "https://raw.githubusercontent.com/cfmleditor/tree-sitter-cfml/{rev}"
-    );
+    let base_url = format!("https://raw.githubusercontent.com/cfmleditor/tree-sitter-cfml/{rev}");
 
     // Map: (grammar, source query file, destination file) → destination in languages/
     let copies: &[(&str, &str, &str)] = &[
@@ -130,7 +132,8 @@ fn sync_queries(rev: &str) {
         let output = output.replace("@character.special", "@string.special");
         let output = output.replace("@text", "@text.literal");
 
-        fs::write(&dest, output).unwrap_or_else(|e| panic!("failed to write {}: {e}", dest.display()));
+        fs::write(&dest, output)
+            .unwrap_or_else(|e| panic!("failed to write {}: {e}", dest.display()));
         println!("  synced {grammar}/{dest_file}");
     }
 
@@ -192,7 +195,19 @@ fn latest_commit(owner_repo: &str) -> String {
 
 fn lint() {
     let root = workspace_root();
-    run_cmd(&root, "cargo", &["clippy", "--target", "wasm32-wasip2", "--", "-D", "warnings"]);
+    run_cmd(
+        &root,
+        "cargo",
+        &[
+            "clippy",
+            "--target",
+            "wasm32-wasip2",
+            "--",
+            "-D",
+            "warnings",
+        ],
+    );
+    gen_tasks(true);
 }
 
 fn release(version: &str, dry_run: bool) {
@@ -283,7 +298,9 @@ fn release(version: &str, dry_run: bool) {
         println!("  - Commit, tag v{version}, and push\n");
         eprint!("Proceed? [y/N] ");
         let mut input = String::new();
-        std::io::stdin().read_line(&mut input).expect("failed to read input");
+        std::io::stdin()
+            .read_line(&mut input)
+            .expect("failed to read input");
         if !input.trim().eq_ignore_ascii_case("y") {
             println!("Aborted.");
             process::exit(0);
@@ -338,8 +355,22 @@ fn release(version: &str, dry_run: bool) {
     // Git commit, tag, push
     if !dry_run {
         println!("\nCommitting...");
-        run_cmd(&root, "git", &["add", "extension.toml", "Cargo.toml", "Cargo.lock", "CHANGELOG.md"]);
-        run_cmd(&root, "git", &["commit", "-m", &format!("Release v{version}")]);
+        run_cmd(
+            &root,
+            "git",
+            &[
+                "add",
+                "extension.toml",
+                "Cargo.toml",
+                "Cargo.lock",
+                "CHANGELOG.md",
+            ],
+        );
+        run_cmd(
+            &root,
+            "git",
+            &["commit", "-m", &format!("Release v{version}")],
+        );
 
         println!("Tagging {tag}...");
         run_cmd(&root, "git", &["tag", &tag]);
@@ -379,4 +410,139 @@ fn workspace_root() -> PathBuf {
         .expect("failed to run cargo locate-project");
     let path = String::from_utf8(output.stdout).unwrap();
     PathBuf::from(path.trim()).parent().unwrap().to_path_buf()
+}
+
+// ─── tasks.json generation ───────────────────────────────────────────────────
+
+/// The languages that get a copy of tasks.json. Zed loads tasks per language
+/// directory, and whichever language owns the active buffer is the only
+/// tasks.json in scope, so all three need the same set.
+const TASK_LANGUAGES: [&str; 3] = ["cfml", "cfscript", "cfquery"];
+
+/// The resolver every task opens with, in POSIX shell.
+///
+/// `command` cannot simply be `cfmleditor-lsp`: the extension only uses a PATH
+/// binary when `worktree.which()` finds one, and otherwise downloads its own
+/// copy into Zed's extension work directory, which is not on PATH. See the
+/// "Every task resolves the binary itself" section of CLAUDE.md for why each
+/// piece is shaped the way it is.
+///
+/// Two guards that are easy to lose when editing this by hand:
+///
+///   - `command -v` reports aliases and shell functions too, and tasks run in
+///     an interactive shell that has sourced the user's rc file. Requiring an
+///     absolute path and then an executable file rejects `cfmleditor-lsp:
+///     aliased to ...` instead of trying to exec it.
+///   - the find matches a symlink as well as a regular file, which is what
+///     `make link` in the cfmleditor-lsp repo puts on PATH.
+const TASK_RESOLVER: &str = concat!(
+    r#"CFLSP="$(command -v cfmleditor-lsp 2>/dev/null)"; "#,
+    r#"case "$CFLSP" in /*) ;; *) CFLSP="" ;; esac; "#,
+    r#"[ -x "$CFLSP" ] || CFLSP="$(find "$HOME/Library/Application Support/Zed/extensions/work/cfml" "#,
+    r#""$HOME/.local/share/zed/extensions/work/cfml" -name cfmleditor-lsp \( -type f -o -type l \) "#,
+    r#"2>/dev/null | head -1)"; "#,
+    r#"[ -x "$CFLSP" ] || { echo "cfmleditor-lsp not found on PATH or in Zed's extension work dir. "#,
+    r#"Open a CFML file to let the extension download it, or install it on PATH." >&2; exit 127; }; "#,
+    r#"exec "$CFLSP""#,
+);
+
+/// One entry per task: the label Zed shows, and the arguments appended after
+/// the resolver's `exec`. Zed escapes `args`, so paths with spaces survive;
+/// that is why the real arguments live here rather than in `command`.
+const TASKS: &[(&str, &[&str])] = &[
+    (
+        "CFML: Scan Workspace for Parse Errors",
+        &["scan", "$ZED_WORKTREE_ROOT"],
+    ),
+    (
+        "CFML: Scan Current File for Parse Errors",
+        &["scan", "$ZED_FILE"],
+    ),
+    ("CFML: Format Current File", &["format", "-w", "$ZED_FILE"]),
+    (
+        "CFML: Explain Call Resolution at Cursor",
+        &[
+            "explain",
+            "--root",
+            "$ZED_WORKTREE_ROOT",
+            "$ZED_FILE",
+            "$ZED_ROW",
+        ],
+    ),
+    (
+        "CFML: Unresolved Calls in Workspace",
+        &["unresolved", "$ZED_WORKTREE_ROOT"],
+    ),
+    (
+        "CFML: References to Symbol at Cursor",
+        &["refs", "$ZED_SYMBOL", "$ZED_WORKTREE_ROOT"],
+    ),
+    (
+        "CFML: Dependency Graph for Current File",
+        &["deps", "--mermaid", "$ZED_FILE"],
+    ),
+];
+
+fn tasks_json() -> String {
+    let tasks: Vec<serde_json::Value> = TASKS
+        .iter()
+        .map(|(label, args)| {
+            serde_json::json!({
+                "label": label,
+                "command": TASK_RESOLVER,
+                "args": args,
+            })
+        })
+        .collect();
+
+    let mut out = serde_json::to_string_pretty(&tasks).expect("failed to serialise tasks");
+    out.push('\n');
+    out
+}
+
+/// Writes languages/<lang>/tasks.json for every language, or with `check`
+/// reports which ones are stale without touching them.
+///
+/// The three files used to be maintained by hand and copied with `cp`, which
+/// left 21 copies of the resolver in the tree - seven tasks times three
+/// languages - and no way to notice when one copy drifted.
+fn gen_tasks(check: bool) {
+    let root = workspace_root();
+    let want = tasks_json();
+    let mut stale = Vec::new();
+
+    for lang in TASK_LANGUAGES {
+        let path = root.join("languages").join(lang).join("tasks.json");
+        let current = fs::read_to_string(&path).unwrap_or_default();
+
+        if current == want {
+            continue;
+        }
+
+        if check {
+            stale.push(format!("languages/{lang}/tasks.json"));
+            continue;
+        }
+
+        fs::write(&path, &want)
+            .unwrap_or_else(|e| panic!("failed to write {}: {e}", path.display()));
+        println!("wrote languages/{lang}/tasks.json");
+    }
+
+    if !stale.is_empty() {
+        eprintln!("Error: tasks.json is out of date in:");
+        for s in &stale {
+            eprintln!("  {s}");
+        }
+        eprintln!("These files are generated. Edit TASKS in xtask/src/main.rs, then run:");
+        eprintln!("  cargo xtask gen-tasks");
+        process::exit(1);
+    }
+
+    if check {
+        println!(
+            "tasks.json is in sync across all {} languages",
+            TASK_LANGUAGES.len()
+        );
+    }
 }
