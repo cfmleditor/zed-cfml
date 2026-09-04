@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Tasks for `cfmleditor-lsp`: explain call resolution at cursor, unresolved calls in
+  workspace, references to symbol at cursor, dependency graph for current file
+- Highlights for the cfscript nodes added in grammar v0.26.34 — three further spellings
+  of a colon separator (`cfparam (name:"x")`, `msSQL.class: 'v';`,
+  `mySuccess():function(){}`), `statement_identifier`, and `access_type` on a variable
+  declaration
+- Java injection for inline Lucee `java { ... }` blocks
+
+### Changed
+
+- Update `tree-sitter-cfml` grammar to v0.26.34
+
+### Fixed
+
+- Tasks resolve the `cfmleditor-lsp` binary rather than assuming it is on `PATH`, so
+  they work with the copy the extension downloads. Previously every task failed with
+  `command not found` for anyone who had not installed the server separately.
+
 ## [0.2.25]
 
 ### Added
