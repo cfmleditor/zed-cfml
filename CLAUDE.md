@@ -82,13 +82,20 @@ than an extension one.
 Zed loads tasks per language directory, so the file is triplicated **byte-identically** —
 a CFML buffer is `CFML (Tag)`, `CFML (Script)` or `CFML (Query)` depending on the file, and
 whichever one is active is the only `tasks.json` in scope. A task added to one directory
-silently does not exist in the other two. Edit `languages/cfml/tasks.json`, then copy:
+silently does not exist in the other two.
+
+**All three files are generated. Do not edit them.** The single source is `TASKS` and
+`TASK_RESOLVER` in `xtask/src/main.rs`:
 
 ```bash
-cp languages/cfml/tasks.json languages/cfscript/tasks.json
-cp languages/cfml/tasks.json languages/cfquery/tasks.json
-md5 -q languages/*/tasks.json | sort -u | wc -l   # must print 1
+cargo xtask gen-tasks           # rewrite all three from TASKS
+cargo xtask gen-tasks --check   # fail if any is stale, changing nothing
 ```
+
+`cargo xtask lint` runs the `--check` form after clippy, so drift fails the lint rather
+than shipping. Hand-maintaining them meant 21 copies of the resolver in the tree, seven
+tasks times three languages, with a `cp` step and an `md5` check as the only guard against
+one copy diverging.
 
 Task variables come from Zed, not from us; the useful ones here are `$ZED_FILE`,
 `$ZED_ROW`, `$ZED_WORKTREE_ROOT`, `$ZED_SYMBOL` and `$ZED_SELECTED_TEXT`. `$ZED_ROW` is
@@ -109,15 +116,17 @@ Each task therefore opens with a resolver that prefers `PATH` and falls back to 
 downloaded copy, then `exec`s it:
 
 ```sh
-CFLSP="$(command -v cfmleditor-lsp || find \
+CFLSP="$(command -v cfmleditor-lsp 2>/dev/null)"
+case "$CFLSP" in /*) ;; *) CFLSP="" ;; esac
+[ -x "$CFLSP" ] || CFLSP="$(find \
   "$HOME/Library/Application Support/Zed/extensions/work/cfml" \
   "$HOME/.local/share/zed/extensions/work/cfml" \
-  -name cfmleditor-lsp -type f 2>/dev/null | head -1)"
-[ -n "$CFLSP" ] || { echo "cfmleditor-lsp not found ..." >&2; exit 127; }
+  -name cfmleditor-lsp \( -type f -o -type l \) 2>/dev/null | head -1)"
+[ -x "$CFLSP" ] || { echo "cfmleditor-lsp not found ..." >&2; exit 127; }
 exec "$CFLSP"
 ```
 
-Four details that are deliberate, not incidental:
+Six details that are deliberate, not incidental:
 
 - **`find`, not a glob.** Tasks run in a login shell, and zsh's `nomatch` aborts the whole
   command on a pattern that matches nothing — which the Linux path does on a Mac. `find`
@@ -129,14 +138,34 @@ Four details that are deliberate, not incidental:
   parse errors reports them rather than the shell's own status.
 - **The not-found branch explains itself and exits 127.** The bare failure gave no clue
   which of the two mechanisms had not happened.
+- **An absolute path, then `[ -x ]`, not `[ -n ]`.** `command -v` reports aliases and shell
+  functions as well as executables, and Zed runs the task through an interactive shell that
+  has sourced the user's rc file. A shell function named `cfmleditor-lsp` made `command -v`
+  print the bare name, `[ -n ]` accepted it, and the task ran the function and exited 0,
+  looking like a task that had succeeded and done nothing. The `case` requires a path
+  starting with `/` and `[ -x ]` requires a real executable, so anything else falls through
+  to the `find`.
+- **`\( -type f -o -type l \)`, not `-type f`.** A symlink is exactly what `make link` in
+  the cfmleditor-lsp repo puts on `PATH`, and `-type f` skips it. The type test cannot be
+  dropped altogether: `[ -x ]` is true for a directory too.
 
 macOS and Linux paths are both covered. Windows still needs the binary on `PATH` — the
 resolver is POSIX shell, and Zed launches tasks there through a different shell.
 
-`CFML: Format Current File` runs `format -w`, which writes the file on disk behind Zed's
-back; with unsaved changes in the buffer the two diverge. The server implements
-`textDocument/formatting`, so `editor: format` is the safer path — the task is kept for
-formatting a file without opening it.
+`CFML: Format Current File` runs `format -w` on `$ZED_FILE`, which is the active buffer's
+own path, so it rewrites on disk the file the editor has open; with unsaved changes in the
+buffer the two diverge and Zed reloads or reports a conflict. The server implements
+`textDocument/formatting`, so `editor: format` is the route with undo integration and
+buffer semantics. What the task adds is the *message*: a refusal (a parse error, or the
+`whitespaceOnly` guard rejecting the result) is task output you can read, where the editor
+shows a transient toast. Both routes read the same `formatting` block from
+`.cfmleditor.json` and both refuse a file the grammar cannot parse.
+
+`CFML: References to Symbol at Cursor` passes `$ZED_SYMBOL`, which as noted above can be
+empty. The task deliberately does not guard that in shell: Zed substitutes its own
+variables into `command` as well as `args`, so a `${ZED_SYMBOL:-...}` default is not safe
+to write here. `cfmleditor-lsp refs` rejects an empty target itself and exits 1, which is
+where the check belongs.
 
 ## Checking for missing highlights
 
