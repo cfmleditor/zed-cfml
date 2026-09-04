@@ -1,25 +1,24 @@
 ; Variables
 ;----------
-
 (identifier) @variable
 
 ; CFML scopes
 ;-------------
-
 ((identifier) @variable.special
  (#match? @variable.special "^(?i)(APPLICATION|ARGUMENTS|CGI|CLIENT|COOKIE|FORM|LOCAL|REQUEST|SERVER|SESSION|THIS|URL|VARIABLES)$"))
 
 ; Properties
 ;-----------
-
 (property_identifier) @property
+
 (shorthand_property_identifier) @property
+
 (shorthand_property_identifier_pattern) @property
+
 (private_property_identifier) @property
 
 ; Component and property declarations
 ;-------------------------------------
-
 (component_attribute
   (attribute_label) @attribute)
 
@@ -35,13 +34,15 @@
 
 ; Function and method definitions
 ;--------------------------------
-
 (function_expression
   name: (identifier) @function)
+
 (function_declaration
   name: (identifier) @function)
+
 (function_declaration
   (access_type) @keyword)
+
 (method_definition
   name: (property_identifier) @function)
 
@@ -79,7 +80,6 @@
 
 ; Special identifiers
 ;--------------------
-
 ((identifier) @constructor
  (#match? @constructor "^[A-Z]"))
 
@@ -100,9 +100,10 @@
 
 ; Literals
 ;---------
-
 (this) @variable.special
+
 (super) @variable.special
+
 (undefined) @constant.builtin
 
 [
@@ -113,6 +114,7 @@
 ] @constant.builtin
 
 (comment) @comment
+
 (cf_comment) @comment
 
 ((comment) @comment.doc
@@ -125,9 +127,11 @@
 
 (hash_expression
   "#" @punctuation.special)
+
 (hash_empty) @punctuation.special
 
 (regex_pattern) @string.regex
+
 (regex_flags) @string.special
 
 (regex
@@ -137,7 +141,6 @@
 
 ; Tokens
 ;-------
-
 [
   ";"
   (optional_chain)
@@ -151,19 +154,25 @@
 
 (pair
   ":" @punctuation.delimiter)
+
 (pair_pattern
   ":" @punctuation.delimiter)
+
 (switch_case
   ":" @punctuation.delimiter)
+
 (switch_default
   ":" @punctuation.delimiter)
+
 (labeled_statement
   ":" @punctuation.delimiter)
+
 (slice_expression
   ":" @punctuation.delimiter)
 
 (cfml_template
   "```" @punctuation.delimiter)
+
 (cfml_template_content) @embedded
 
 (ternary_expression
@@ -177,21 +186,19 @@
 
 ; Types
 ;------
-
 (parameter_type) @type
-; `User[] function getUsers()` is one token, so the anonymous
-; "[" / "]" operator rule cannot reach it.
-(array_return_suffix) @punctuation.bracket
+
 (catch_clause
   type: (catch_type) @type)
+
 (property_declaration
   type: [(identifier) (path)] @type)
 
 ; Tag statements
 ;---------------
-
 (tag_statement
   tag: (identifier) @keyword)
+
 (query_tag
   "query" @keyword)
 
@@ -204,14 +211,13 @@
 
 (query_expression
   ["\"" "'"] @punctuation.delimiter)
+
 (query_text) @embedded
 
 ; Imports
 ;--------
-
 (import_path
   (identifier) @module)
-
 
 [
   "-"
@@ -230,8 +236,6 @@
   "%="
   "<"
   "<="
-  "<>"
-  "<<"
   "<<="
   "="
   "=="
@@ -242,9 +246,7 @@
   "->"
   ">"
   ">="
-  ">>"
   ">>="
-  ">>>"
   ">>>="
   "^"
   "&"
@@ -259,6 +261,10 @@
   "&&="
   "||="
   "??="
+  "<>"
+  "<<"
+  ">>"
+  ">>>"
 ] @operator
 
 (unary_operator) @operator
@@ -277,7 +283,6 @@
   "}" @punctuation.special) @embedded
 
 [
-  "abstract"
   "as"
   "break"
   "case"
@@ -290,7 +295,6 @@
   "do"
   "else"
   "export"
-  "final"
   "finally"
   "for"
   "from"
@@ -301,13 +305,10 @@
   "in"
   "include"
   "instanceof"
-  "interface"
   "let"
   "new"
   "of"
-  "property"
   "query"
-  "required"
   "return"
   "set"
   "static"
@@ -318,7 +319,43 @@
   "void"
   "while"
   "with"
+  "abstract"
+  "final"
+  "interface"
+  "property"
+  "required"
 ] @keyword
+
+(regex) @string.special
+
+; `User[] function getUsers()` — one token, so the anonymous "[" / "]"
+; rule below cannot reach it.
+(array_return_suffix) @punctuation.bracket
 
 ; Lucee object selector, e.g. `new java:java.io.File(...)`
 (type_prefix) @keyword
+
+; `cfparam (name:"x" default:"y")` — a colon-separated script tag call attribute
+; is an assignment_expression whose operator is `:` rather than `=`.
+(assignment_expression
+  ":" @operator)
+
+; `foo: bar;`
+(statement_identifier) @label
+
+; Unparented: `public final MEMBER = "v"` puts access_type on a
+; variable_declaration, not just a function_declaration.
+(access_type) @keyword
+
+; Inline Lucee java block, `a = java { ... }` — injected as Java, @embedded is
+; the fallback if that layer does not load.
+(java_class_content) @embedded
+
+; `msSQL.class: 'value';` — a dotted colon assignment is its own node, not an
+; assignment_expression, so the rule above does not reach it.
+(colon_assignment_statement
+  ":" @operator)
+
+; `mySuccess():function(result, error) { … }` — the listener callback separator.
+(function_listener_expression
+  ":" @operator)
