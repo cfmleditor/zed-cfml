@@ -208,6 +208,19 @@ fn lint() {
         ],
     );
     gen_tasks(true);
+
+    // Run here as well as under `cargo test`, because CI only runs on tags:
+    // `cargo xtask lint` is the gate this repository actually has.
+    let failures = check_task_dispatch();
+    if !failures.is_empty() {
+        eprintln!("Error: task arguments do not reach the binary:");
+        for f in &failures {
+            eprintln!("  {f}");
+        }
+        process::exit(1);
+    }
+
+    println!("all {} tasks forward their arguments", TASKS.len());
 }
 
 fn release(version: &str, dry_run: bool) {
@@ -443,12 +456,28 @@ const TASK_RESOLVER: &str = concat!(
     r#"2>/dev/null | head -1)"; "#,
     r#"[ -x "$CFLSP" ] || { echo "cfmleditor-lsp not found on PATH or in Zed's extension work dir. "#,
     r#"Open a CFML file to let the extension download it, or install it on PATH." >&2; exit 127; }; "#,
-    r#"exec "$CFLSP""#,
+    // "$0" "$@" and not "$@" alone. Zed runs this as
+    // `zsh -i -c '<script>' format -w <file>`, and a shell invoked with -c
+    // takes the first argument after the script as $0, not as $1 — so "$@"
+    // holds `-w <file>` and the subcommand is in $0. Forwarding only "$@"
+    // therefore runs `cfmleditor-lsp -w <file>` with no subcommand.
+    //
+    // Forwarding nothing, which is what this did, runs the binary bare — and
+    // bare is the LSP server. Every task started a server on stdio, read EOF,
+    // exited 0, and was reported by Zed as having finished successfully. The
+    // format task was the only one where that was visible, because it is the
+    // only one whose job is to change the file; the rest print nothing, which
+    // reads as "nothing to report" rather than "never ran".
+    r#"exec "$CFLSP" "$0" "$@""#,
 );
 
-/// One entry per task: the label Zed shows, and the arguments appended after
-/// the resolver's `exec`. Zed escapes `args`, so paths with spaces survive;
-/// that is why the real arguments live here rather than in `command`.
+/// One entry per task: the label Zed shows, and the arguments Zed passes to the
+/// resolver script, which forwards them to the binary. Zed escapes `args`, so
+/// paths with spaces survive; that is why the real arguments live here rather
+/// than in `command`.
+///
+/// They are *not* appended to the resolver's `exec` by Zed — the script has to
+/// forward them itself. See TASK_RESOLVER.
 const TASKS: &[(&str, &[&str])] = &[
     (
         "CFML: Scan Workspace for Parse Errors",
@@ -543,6 +572,111 @@ fn gen_tasks(check: bool) {
         println!(
             "tasks.json is in sync across all {} languages",
             TASK_LANGUAGES.len()
+        );
+    }
+}
+
+/// Runs every task's command the way Zed runs it, against a stub binary that
+/// records its argv, and reports the tasks whose arguments did not arrive.
+///
+/// This exists because the failure it catches is invisible from the outside.
+/// The resolver used to end `exec "$CFLSP"`, forwarding nothing, on the
+/// assumption that Zed appends `args` to `command`. It does not: Zed runs
+/// `zsh -i -c '<script>' format -w <file>`, and a shell invoked with -c takes
+/// the first argument after the script as $0 rather than $1. So the arguments
+/// sat in the script's positional parameters, untouched, and the script ran
+/// `cfmleditor-lsp` bare — which is the LSP server. Every task started a
+/// server on stdio, read EOF, exited 0, and Zed reported that it had finished
+/// successfully.
+///
+/// Nothing short of inspecting the argv would have caught that. The exit
+/// status was 0, the output was empty, and for six of the seven tasks empty
+/// output is what success looks like.
+fn check_task_dispatch() -> Vec<String> {
+    let dir = env::temp_dir().join(format!("zed-cfml-taskcheck-{}", process::id()));
+    let _ = fs::remove_dir_all(&dir);
+    fs::create_dir_all(&dir).expect("failed to create temp dir");
+
+    let record = dir.join("argv");
+    let stub = dir.join("cfmleditor-lsp");
+
+    fs::write(
+        &stub,
+        format!(
+            "#!/bin/sh\n: > '{0}'\nfor a in \"$@\"; do printf '%s\\n' \"$a\" >> '{0}'; done\n",
+            record.display()
+        ),
+    )
+    .expect("failed to write stub");
+
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+
+        fs::set_permissions(&stub, fs::Permissions::from_mode(0o755))
+            .expect("failed to chmod stub");
+    }
+
+    let mut failures = Vec::new();
+
+    for (label, args) in TASKS {
+        let _ = fs::remove_file(&record);
+
+        // The stub directory goes in front of the real PATH rather than
+        // replacing it: the resolver's own `command -v` must find the stub
+        // first, but `sh` and the utilities the fallback branch uses still
+        // have to be findable.
+        let path = match env::var_os("PATH") {
+            Some(existing) => {
+                let mut p = dir.clone().into_os_string();
+                p.push(":");
+                p.push(existing);
+                p
+            }
+            None => dir.clone().into_os_string(),
+        };
+
+        let status = process::Command::new("/bin/sh")
+            .arg("-c")
+            .arg(TASK_RESOLVER)
+            .args(args.iter())
+            .env("PATH", path)
+            .stdin(process::Stdio::null())
+            .status()
+            .expect("failed to run task command");
+
+        if !status.success() {
+            failures.push(format!("{label}: resolver exited {status}"));
+            continue;
+        }
+
+        let got: Vec<String> = fs::read_to_string(&record)
+            .unwrap_or_default()
+            .lines()
+            .map(str::to_string)
+            .collect();
+
+        if got.iter().map(String::as_str).ne(args.iter().copied()) {
+            failures.push(format!("{label}: binary received {got:?}, want {args:?}"));
+        }
+    }
+
+    let _ = fs::remove_dir_all(&dir);
+
+    failures
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn every_task_reaches_the_binary_with_its_arguments() {
+        let failures = check_task_dispatch();
+        assert!(
+            failures.is_empty(),
+            "task arguments not forwarded:\n  {}",
+            failures.join("\n  ")
         );
     }
 }
