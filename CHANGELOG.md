@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.2.29]
+
 ### Added
 
 - "CFML: Export Unresolved Calls Report" and "CFML: Export CFLint Report" tasks.
