@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- "CFML: Export Unresolved Calls Report" and "CFML: Export CFLint Report" tasks.
+  They run `cfmleditor-lsp unresolved --write` and `cfmleditor-lsp cflint --write`
+  on the worktree, writing the known-issues reports the server shows as
+  diagnostics. The CFLint task needs a `cfmleditor-lsp` with the `cflint`
+  subcommand (cfmleditor/cfmleditor-lsp#126).
+
 ### Fixed
 
 - Tasks starting a language server that never exits instead of running their

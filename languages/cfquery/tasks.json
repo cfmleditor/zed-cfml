@@ -45,6 +45,24 @@
   },
   {
     "args": [
+      "unresolved",
+      "--write",
+      "$ZED_WORKTREE_ROOT"
+    ],
+    "command": "CFLSP=\"$(command -v cfmleditor-lsp 2>/dev/null)\"; case \"$CFLSP\" in /*) ;; *) CFLSP=\"\" ;; esac; [ -x \"$CFLSP\" ] || CFLSP=\"$(find \"$HOME/Library/Application Support/Zed/extensions/work/cfml\" \"$HOME/.local/share/zed/extensions/work/cfml\" -name cfmleditor-lsp \\( -type f -o -type l \\) 2>/dev/null | head -1)\"; [ -x \"$CFLSP\" ] || { echo \"cfmleditor-lsp not found on PATH or in Zed's extension work dir. Open a CFML file to let the extension download it, or install it on PATH.\" >&2; exit 127; }; case \"$0\" in *sh|-*) ;; *) set -- \"$0\" \"$@\" ;; esac; exec \"$CFLSP\" \"$@\"",
+    "label": "CFML: Export Unresolved Calls Report"
+  },
+  {
+    "args": [
+      "cflint",
+      "--write",
+      "$ZED_WORKTREE_ROOT"
+    ],
+    "command": "CFLSP=\"$(command -v cfmleditor-lsp 2>/dev/null)\"; case \"$CFLSP\" in /*) ;; *) CFLSP=\"\" ;; esac; [ -x \"$CFLSP\" ] || CFLSP=\"$(find \"$HOME/Library/Application Support/Zed/extensions/work/cfml\" \"$HOME/.local/share/zed/extensions/work/cfml\" -name cfmleditor-lsp \\( -type f -o -type l \\) 2>/dev/null | head -1)\"; [ -x \"$CFLSP\" ] || { echo \"cfmleditor-lsp not found on PATH or in Zed's extension work dir. Open a CFML file to let the extension download it, or install it on PATH.\" >&2; exit 127; }; case \"$0\" in *sh|-*) ;; *) set -- \"$0\" \"$@\" ;; esac; exec \"$CFLSP\" \"$@\"",
+    "label": "CFML: Export CFLint Report"
+  },
+  {
+    "args": [
       "refs",
       "$ZED_SYMBOL",
       "$ZED_WORKTREE_ROOT"

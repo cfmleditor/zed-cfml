@@ -508,6 +508,20 @@ const TASKS: &[(&str, &[&str])] = &[
         "CFML: Unresolved Calls in Workspace",
         &["unresolved", "$ZED_WORKTREE_ROOT"],
     ),
+    // The two report exports write the known-issues files cfmleditor-lsp
+    // publishes as diagnostics, where the configured .cfmleditor.json says
+    // (the defaults are .cfmleditor-unresolved.txt and .cfmleditor-cflint.txt
+    // beside it). The server's cfmleditor.exportUnresolved and
+    // cfmleditor.exportCFLint do the same, from the LSP command picker or as
+    // code actions; these reach them on a Zed without either.
+    (
+        "CFML: Export Unresolved Calls Report",
+        &["unresolved", "--write", "$ZED_WORKTREE_ROOT"],
+    ),
+    (
+        "CFML: Export CFLint Report",
+        &["cflint", "--write", "$ZED_WORKTREE_ROOT"],
+    ),
     (
         "CFML: References to Symbol at Cursor",
         &["refs", "$ZED_SYMBOL", "$ZED_WORKTREE_ROOT"],
