@@ -73,11 +73,32 @@ for d in cfml cfscript cfquery; do echo "$d: $(git -C grammars/$d rev-parse HEAD
 ## Three copies of tasks.json
 
 `languages/<lang>/tasks.json` is how this extension exposes `cfmleditor-lsp`'s CLI
-subcommands, and it is the *only* route available: the extension API (`zed_extension_api`)
-has no way to contribute command-palette entries, so a task is the one thing that can be
-shipped and still land in front of the user. The server's `workspace/executeCommand`
-handlers are reachable only as code actions, which is a `cfmleditor-lsp` release rather
-than an extension one.
+subcommands, and it is the only route this extension controls: the extension API
+(`zed_extension_api`) has no way to contribute command-palette entries or to send the
+server a request ([zed#20042](https://github.com/zed-industries/zed/issues/20042)), so a
+task is the one thing that can be shipped and still land in front of the user.
+
+The server's `workspace/executeCommand` handlers (`cfmleditor.exportUnresolved`,
+`cfmleditor.exportCFLint`, `cfmleditor.generateCodeMap` and the rest) need nothing from
+the extension. Zed reaches them two ways:
+
+- **The LSP command picker**, Zed 1.21 and later
+  ([zed#63607](https://github.com/zed-industries/zed/pull/63607)): `lsp command selector:
+  toggle` in the command palette, action `lsp_command_selector::Toggle`, lists every command
+  the server advertises in `executeCommandProvider` and runs the one picked. `tab`
+  (`lsp_command_selector::ToggleArgumentsFocus`) moves to an arguments field. A command
+  the server does not advertise is not listed, so a new one needs adding to that list in
+  `cfmleditor-lsp` as well as to its handler.
+- **Code actions** (`cmd-.`), on any Zed. `cfmleditor-lsp` offers the ones worth reaching
+  there, the workspace report exports among them, which is a `cfmleditor-lsp` release
+  rather than an extension one.
+
+So a task is still the way to expose a CLI subcommand, which the server does not run, and
+the way to reach anything on a Zed older than 1.21. For a server command on 1.21, a task
+that wraps the CLI equivalent adds a shell and a binary lookup the picker does not need.
+[zed#56222](https://github.com/zed-industries/zed/pull/56222), still open, would let an
+extension handle some LSP commands itself (showing locations, scheduling a task) rather
+than send them to the server.
 
 Zed loads tasks per language directory, so the file is triplicated **byte-identically** —
 a CFML buffer is `CFML (Tag)`, `CFML (Script)` or `CFML (Query)` depending on the file, and
