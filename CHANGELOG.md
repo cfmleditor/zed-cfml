@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Tasks starting a language server that never exits instead of running their
+  command. Zed can append a task's arguments to its command text, and the
+  resolver forwarded `$0`, which is then the shell, ahead of them: "CFML:
+  Unresolved Calls in Workspace" ran `cfmleditor-lsp /bin/zsh unresolved
+  <root>`, and with no subcommand first the binary is the LSP server, waiting
+  on stdin. `$0` is now forwarded only when it is not the shell, so the
+  arguments arrive whether Zed appends them or passes them separately, and the
+  xtask check runs every task both ways.
+
 ## [0.2.28]
 
 ### Changed
