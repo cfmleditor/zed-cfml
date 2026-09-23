@@ -456,19 +456,24 @@ const TASK_RESOLVER: &str = concat!(
     r#"2>/dev/null | head -1)"; "#,
     r#"[ -x "$CFLSP" ] || { echo "cfmleditor-lsp not found on PATH or in Zed's extension work dir. "#,
     r#"Open a CFML file to let the extension download it, or install it on PATH." >&2; exit 127; }; "#,
-    // "$0" "$@" and not "$@" alone. Zed runs this as
-    // `zsh -i -c '<script>' format -w <file>`, and a shell invoked with -c
-    // takes the first argument after the script as $0, not as $1 — so "$@"
-    // holds `-w <file>` and the subcommand is in $0. Forwarding only "$@"
-    // therefore runs `cfmleditor-lsp -w <file>` with no subcommand.
+    // Zed hands `args` over in one of two ways, and the script has to work
+    // with both. Separately, as `zsh -i -c '<script>' format -w <file>`: a
+    // shell invoked with -c takes the first argument after the script as $0,
+    // not $1, so the subcommand is in $0 and has to be put back in front of
+    // "$@". Or appended to the script text, as
+    // `zsh -i -c '<script> format -w <file>'`, which the task picker's preview
+    // shows: then $0 is the shell itself and "$@" is empty, and the arguments
+    // follow the `exec` line below as ordinary words.
     //
-    // Forwarding nothing, which is what this did, runs the binary bare — and
-    // bare is the LSP server. Every task started a server on stdio, read EOF,
-    // exited 0, and was reported by Zed as having finished successfully. The
-    // format task was the only one where that was visible, because it is the
-    // only one whose job is to change the file; the rest print nothing, which
-    // reads as "nothing to report" rather than "never ran".
-    r#"exec "$CFLSP" "$0" "$@""#,
+    // Forwarding "$0" unconditionally broke the second: the binary ran as
+    // `cfmleditor-lsp /bin/zsh unresolved <root>`, and with no subcommand
+    // first it is the LSP server, which waits on stdin for good. Forwarding
+    // nothing broke the first the same way, except that the server read EOF
+    // and exited 0, so Zed reported every task as having succeeded. So $0 is
+    // kept only when it is not the shell. No subcommand ends in "sh", and a
+    // login shell's $0 starts with "-".
+    r#"case "$0" in *sh|-*) ;; *) set -- "$0" "$@" ;; esac; "#,
+    r#"exec "$CFLSP" "$@""#,
 );
 
 /// One entry per task: the label Zed shows, and the arguments Zed passes to the
@@ -476,8 +481,9 @@ const TASK_RESOLVER: &str = concat!(
 /// paths with spaces survive; that is why the real arguments live here rather
 /// than in `command`.
 ///
-/// They are *not* appended to the resolver's `exec` by Zed — the script has to
-/// forward them itself. See TASK_RESOLVER.
+/// Zed either appends them to the resolver's text or passes them as the
+/// shell's positional parameters, and the script forwards them either way. See
+/// TASK_RESOLVER.
 const TASKS: &[(&str, &[&str])] = &[
     (
         "CFML: Scan Workspace for Parse Errors",
@@ -576,8 +582,14 @@ fn gen_tasks(check: bool) {
     }
 }
 
-/// Runs every task's command the way Zed runs it, against a stub binary that
-/// records its argv, and reports the tasks whose arguments did not arrive.
+/// Runs every task's command both ways Zed runs one, against a stub binary that
+/// records its argv, and reports the tasks whose arguments did not arrive:
+/// with the arguments passed to the shell after the script, and with them
+/// appended, shell-quoted, to the script text.
+///
+/// The second is what the task picker's preview shows, and forwarding "$0"
+/// unconditionally broke it: the binary received `/bin/zsh unresolved <root>`
+/// and ran as the LSP server, waiting on stdin with the task never finishing.
 ///
 /// This exists because the failure it catches is invisible from the outside.
 /// The resolver used to end `exec "$CFLSP"`, forwarding nothing, on the
@@ -620,7 +632,6 @@ fn check_task_dispatch() -> Vec<String> {
     let mut failures = Vec::new();
 
     for (label, args) in TASKS {
-        let _ = fs::remove_file(&record);
 
         // The stub directory goes in front of the real PATH rather than
         // replacing it: the resolver's own `command -v` must find the stub
@@ -636,34 +647,56 @@ fn check_task_dispatch() -> Vec<String> {
             None => dir.clone().into_os_string(),
         };
 
-        let status = process::Command::new("/bin/sh")
-            .arg("-c")
-            .arg(TASK_RESOLVER)
-            .args(args.iter())
-            .env("PATH", path)
-            .stdin(process::Stdio::null())
-            .status()
-            .expect("failed to run task command");
+        let appended = std::iter::once(TASK_RESOLVER.to_string())
+            .chain(args.iter().map(|a| shell_quote(a)))
+            .collect::<Vec<_>>()
+            .join(" ");
 
-        if !status.success() {
-            failures.push(format!("{label}: resolver exited {status}"));
-            continue;
-        }
+        let ways: [(&str, &str, &[&str]); 2] = [
+            ("as arguments", TASK_RESOLVER, args),
+            ("appended", &appended, &[]),
+        ];
 
-        let got: Vec<String> = fs::read_to_string(&record)
-            .unwrap_or_default()
-            .lines()
-            .map(str::to_string)
-            .collect();
+        for (way, script, extra) in ways {
+            let _ = fs::remove_file(&record);
 
-        if got.iter().map(String::as_str).ne(args.iter().copied()) {
-            failures.push(format!("{label}: binary received {got:?}, want {args:?}"));
+            let status = process::Command::new("/bin/sh")
+                .arg("-c")
+                .arg(script)
+                .args(extra.iter())
+                .env("PATH", &path)
+                .stdin(process::Stdio::null())
+                .status()
+                .expect("failed to run task command");
+
+            if !status.success() {
+                failures.push(format!("{label} ({way}): resolver exited {status}"));
+                continue;
+            }
+
+            let got: Vec<String> = fs::read_to_string(&record)
+                .unwrap_or_default()
+                .lines()
+                .map(str::to_string)
+                .collect();
+
+            if got.iter().map(String::as_str).ne(args.iter().copied()) {
+                failures.push(format!(
+                    "{label} ({way}): binary received {got:?}, want {args:?}"
+                ));
+            }
         }
     }
 
     let _ = fs::remove_dir_all(&dir);
 
     failures
+}
+
+/// Single-quotes s for a POSIX shell, as Zed does when it appends a task's
+/// arguments to its command.
+fn shell_quote(s: &str) -> String {
+    format!("'{}'", s.replace('\'', r#"'\''"#))
 }
 
 #[cfg(test)]

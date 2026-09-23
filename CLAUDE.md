@@ -123,17 +123,25 @@ case "$CFLSP" in /*) ;; *) CFLSP="" ;; esac
   "$HOME/.local/share/zed/extensions/work/cfml" \
   -name cfmleditor-lsp \( -type f -o -type l \) 2>/dev/null | head -1)"
 [ -x "$CFLSP" ] || { echo "cfmleditor-lsp not found ..." >&2; exit 127; }
-exec "$CFLSP"
+case "$0" in *sh|-*) ;; *) set -- "$0" "$@" ;; esac
+exec "$CFLSP" "$@"
 ```
 
-Six details that are deliberate, not incidental:
+Seven details that are deliberate, not incidental:
 
 - **`find`, not a glob.** Tasks run in a login shell, and zsh's `nomatch` aborts the whole
   command on a pattern that matches nothing — which the Linux path does on a Mac. `find`
   takes the directories as arguments, so a missing one is just a suppressed stderr line.
 - **The real arguments stay in `args`.** Zed escapes those, so paths with spaces survive;
-  embedding them in `command` would need hand-quoting. The resolver ends in `exec "$CFLSP"`
-  precisely so Zed's escaped args land as that process's arguments.
+  embedding them in `command` would need hand-quoting.
+- **The `case` on `$0` forwards them whichever way Zed passes them.** Zed has been seen
+  to append them to the script text (`zsh -i -c '<script> unresolved <root>'`, as the
+  task picker's preview shows), which leaves `$0` the shell and `"$@"` empty, and to pass
+  them after the script (`zsh -i -c '<script>' unresolved <root>`), which puts the
+  subcommand in `$0`. Forwarding `"$0"` unconditionally sent `/bin/zsh` as the first
+  argument in the first form, and with no subcommand first the binary is the LSP server,
+  so the task hung on stdin. `check_task_dispatch` in xtask runs every task both ways
+  against a stub that records its argv, and `cargo xtask lint` runs it.
 - **`exec`, not a plain call.** The task's exit code is the tool's, so a scan that finds
   parse errors reports them rather than the shell's own status.
 - **The not-found branch explains itself and exits 127.** The bare failure gave no clue
