@@ -11,8 +11,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - "CFML: Export Unresolved Calls Report" and "CFML: Export CFLint Report" tasks.
   They run `cfmleditor-lsp unresolved --write` and `cfmleditor-lsp cflint --write`
   on the worktree, writing the known-issues reports the server shows as
-  diagnostics. Both need a `cfmleditor-lsp` release after v0.3.3
-  (cfmleditor/cfmleditor-lsp#123 and #126).
+  diagnostics. Both need cfmleditor-lsp 0.3.4 or later, which the extension
+  downloads unless a `cfmleditor-lsp` on `PATH` is older.
 
 ### Fixed
 
