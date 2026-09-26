@@ -38,7 +38,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   | Export CFLint Report | Code action "Export CFLint report for the workspace" |
   | References to Symbol at Cursor | Find All References, or the "Find all references" code action |
   | Dependency Graph for Current File | Code action "Export dependency graph for …" |
-  | Explain Call Resolution at Cursor | `cfmleditor-lsp explain <file> <line>` from a terminal, until the server offers it |
+  | Explain Call Resolution at Cursor | Code action "Explain call resolution on line N", or `cfmleditor.explainCall` in the picker (cfmleditor-lsp 0.3.7, which the extension downloads) |
 
   `cargo xtask gen-tasks` is gone with them.
 

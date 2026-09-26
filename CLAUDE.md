@@ -78,7 +78,8 @@ the copy the extension downloads into Zed's extension work directory. Zed's revi
 pushed back on that in [zed-industries/extensions#7719](https://github.com/zed-industries/extensions/pull/7719):
 a task invoking a CLI should fail when the CLI is not on `PATH`, not probe the extension's
 private directory, and anything the language server can do belongs in code actions.
-Every task but `explain` had a server equivalent, so they were removed in 0.2.31.
+Every task but `explain` had a server equivalent, so they were removed in 0.2.31, and
+`explain` became `cfmleditor.explainCall` and its code action in cfmleditor-lsp 0.3.7.
 
 Add new user-facing features to `cfmleditor-lsp`, not here. Zed reaches them two ways:
 
