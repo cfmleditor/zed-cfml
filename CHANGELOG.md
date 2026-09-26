@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Removed
+
+- All nine `cfmleditor-lsp` tasks, and the shell resolver each one opened with to find
+  the binary the extension downloads. Zed's extension reviewers asked for server
+  features to be reached through the language server rather than through tasks that
+  probe the extension's work directory, and every task but one already had a server
+  route:
+
+  | Task | Use instead |
+  | --- | --- |
+  | Scan Workspace for Parse Errors | `lsp command selector: toggle` → `cfmleditor.scanWorkspace` (Zed 1.21+); results land in the project diagnostics |
+  | Scan Current File for Parse Errors | Diagnostics, shown as you edit |
+  | Format Current File | `editor: format` |
+  | Unresolved Calls in Workspace | Diagnostics, or the report below |
+  | Export Unresolved Calls Report | Code action (`cmd-.`) "Export unresolved calls report for the workspace" |
+  | Export CFLint Report | Code action "Export CFLint report for the workspace" |
+  | References to Symbol at Cursor | Find All References, or the "Find all references" code action |
+  | Dependency Graph for Current File | Code action "Export dependency graph for …" |
+  | Explain Call Resolution at Cursor | `cfmleditor-lsp explain <file> <line>` from a terminal, until the server offers it |
+
+  `cargo xtask gen-tasks` is gone with them.
+
 ## [0.2.30]
 
 ### Changed

@@ -70,131 +70,32 @@ node types:
 for d in cfml cfscript cfquery; do echo "$d: $(git -C grammars/$d rev-parse HEAD)"; done
 ```
 
-## Three copies of tasks.json
+## No tasks: server features go through LSP
 
-`languages/<lang>/tasks.json` is how this extension exposes `cfmleditor-lsp`'s CLI
-subcommands, and it is the only route this extension controls: the extension API
-(`zed_extension_api`) has no way to contribute command-palette entries or to send the
-server a request ([zed#20042](https://github.com/zed-industries/zed/issues/20042)), so a
-task is the one thing that can be shipped and still land in front of the user.
+The extension ships no `tasks.json`. Up to 0.2.30 it had nine tasks wrapping
+`cfmleditor-lsp`'s CLI subcommands, each opening with a shell resolver that fell back to
+the copy the extension downloads into Zed's extension work directory. Zed's reviewers
+pushed back on that in [zed-industries/extensions#7719](https://github.com/zed-industries/extensions/pull/7719):
+a task invoking a CLI should fail when the CLI is not on `PATH`, not probe the extension's
+private directory, and anything the language server can do belongs in code actions.
+Every task but `explain` had a server equivalent, so they were removed in 0.2.31.
 
-The server's `workspace/executeCommand` handlers (`cfmleditor.exportUnresolved`,
-`cfmleditor.exportCFLint`, `cfmleditor.generateCodeMap` and the rest) need nothing from
-the extension. Zed reaches them two ways:
+Add new user-facing features to `cfmleditor-lsp`, not here. Zed reaches them two ways:
 
 - **The LSP command picker**, Zed 1.21 and later
   ([zed#63607](https://github.com/zed-industries/zed/pull/63607)): `lsp command selector:
-  toggle` in the command palette, action `lsp_command_selector::Toggle`, lists every command
-  the server advertises in `executeCommandProvider` and runs the one picked. `tab`
-  (`lsp_command_selector::ToggleArgumentsFocus`) moves to an arguments field. A command
-  the server does not advertise is not listed, so a new one needs adding to that list in
-  `cfmleditor-lsp` as well as to its handler.
-- **Code actions** (`cmd-.`), on any Zed. `cfmleditor-lsp` offers the ones worth reaching
-  there, the workspace report exports among them, which is a `cfmleditor-lsp` release
-  rather than an extension one.
+  toggle` lists every command the server advertises in `executeCommandProvider`. A command
+  the server does not advertise is not listed, so a new one needs adding to that list as
+  well as to its handler.
+- **Code actions** (`cmd-.`), on any Zed.
 
-So a task is still the way to expose a CLI subcommand, which the server does not run, and
-the way to reach anything on a Zed older than 1.21. For a server command on 1.21, a task
-that wraps the CLI equivalent adds a shell and a binary lookup the picker does not need.
+Standard LSP requests cover the rest: `editor: format` for formatting, Find All
+References, and diagnostics for parse errors and unresolved calls.
+
+Do not reintroduce a task that locates the downloaded binary. If a CLI-only task is ever
+worth shipping, call plain `cfmleditor-lsp` and let it fail when it is not on `PATH`.
 [zed#56222](https://github.com/zed-industries/zed/pull/56222), still open, would let an
-extension handle some LSP commands itself (showing locations, scheduling a task) rather
-than send them to the server.
-
-Zed loads tasks per language directory, so the file is triplicated **byte-identically** —
-a CFML buffer is `CFML (Tag)`, `CFML (Script)` or `CFML (Query)` depending on the file, and
-whichever one is active is the only `tasks.json` in scope. A task added to one directory
-silently does not exist in the other two.
-
-**All three files are generated. Do not edit them.** The single source is `TASKS` and
-`TASK_RESOLVER` in `xtask/src/main.rs`:
-
-```bash
-cargo xtask gen-tasks           # rewrite all three from TASKS
-cargo xtask gen-tasks --check   # fail if any is stale, changing nothing
-```
-
-`cargo xtask lint` runs the `--check` form after clippy, so drift fails the lint rather
-than shipping. Hand-maintaining them meant 21 copies of the resolver in the tree, seven
-tasks times three languages, with a `cp` step and an `md5` check as the only guard against
-one copy diverging.
-
-Task variables come from Zed, not from us; the useful ones here are `$ZED_FILE`,
-`$ZED_ROW`, `$ZED_WORKTREE_ROOT`, `$ZED_SYMBOL` and `$ZED_SELECTED_TEXT`. `$ZED_ROW` is
-what makes `explain <file> <line>` work from the cursor. Note `$ZED_SYMBOL` is the
-*selected symbol* from Zed's outline context, not the word under the cursor, so it can be
-empty or resolve to the enclosing function — `$ZED_SELECTED_TEXT` is the fallback when a
-command needs an exact name.
-
-### Every task resolves the binary itself
-
-`command` is not `cfmleditor-lsp`. It cannot be: `src/lib.rs` only uses a `PATH` binary
-when `worktree.which()` finds one, and otherwise downloads its own copy into Zed's
-extension work directory, which is not on `PATH`. That is the default for every user, so
-naming the binary directly failed with `command not found` and exit 127 for anyone who had
-not installed it separately.
-
-Each task therefore opens with a resolver that prefers `PATH` and falls back to the
-downloaded copy, then `exec`s it:
-
-```sh
-CFLSP="$(command -v cfmleditor-lsp 2>/dev/null)"
-case "$CFLSP" in /*) ;; *) CFLSP="" ;; esac
-[ -x "$CFLSP" ] || CFLSP="$(find \
-  "$HOME/Library/Application Support/Zed/extensions/work/cfml" \
-  "$HOME/.local/share/zed/extensions/work/cfml" \
-  -name cfmleditor-lsp \( -type f -o -type l \) 2>/dev/null | head -1)"
-[ -x "$CFLSP" ] || { echo "cfmleditor-lsp not found ..." >&2; exit 127; }
-case "$0" in *sh|-*) ;; *) set -- "$0" "$@" ;; esac
-exec "$CFLSP" "$@"
-```
-
-Seven details that are deliberate, not incidental:
-
-- **`find`, not a glob.** Tasks run in a login shell, and zsh's `nomatch` aborts the whole
-  command on a pattern that matches nothing — which the Linux path does on a Mac. `find`
-  takes the directories as arguments, so a missing one is just a suppressed stderr line.
-- **The real arguments stay in `args`.** Zed escapes those, so paths with spaces survive;
-  embedding them in `command` would need hand-quoting.
-- **The `case` on `$0` forwards them whichever way Zed passes them.** Zed has been seen
-  to append them to the script text (`zsh -i -c '<script> unresolved <root>'`, as the
-  task picker's preview shows), which leaves `$0` the shell and `"$@"` empty, and to pass
-  them after the script (`zsh -i -c '<script>' unresolved <root>`), which puts the
-  subcommand in `$0`. Forwarding `"$0"` unconditionally sent `/bin/zsh` as the first
-  argument in the first form, and with no subcommand first the binary is the LSP server,
-  so the task hung on stdin. `check_task_dispatch` in xtask runs every task both ways
-  against a stub that records its argv, and `cargo xtask lint` runs it.
-- **`exec`, not a plain call.** The task's exit code is the tool's, so a scan that finds
-  parse errors reports them rather than the shell's own status.
-- **The not-found branch explains itself and exits 127.** The bare failure gave no clue
-  which of the two mechanisms had not happened.
-- **An absolute path, then `[ -x ]`, not `[ -n ]`.** `command -v` reports aliases and shell
-  functions as well as executables, and Zed runs the task through an interactive shell that
-  has sourced the user's rc file. A shell function named `cfmleditor-lsp` made `command -v`
-  print the bare name, `[ -n ]` accepted it, and the task ran the function and exited 0,
-  looking like a task that had succeeded and done nothing. The `case` requires a path
-  starting with `/` and `[ -x ]` requires a real executable, so anything else falls through
-  to the `find`.
-- **`\( -type f -o -type l \)`, not `-type f`.** A symlink is exactly what `make link` in
-  the cfmleditor-lsp repo puts on `PATH`, and `-type f` skips it. The type test cannot be
-  dropped altogether: `[ -x ]` is true for a directory too.
-
-macOS and Linux paths are both covered. Windows still needs the binary on `PATH` — the
-resolver is POSIX shell, and Zed launches tasks there through a different shell.
-
-`CFML: Format Current File` runs `format -w` on `$ZED_FILE`, which is the active buffer's
-own path, so it rewrites on disk the file the editor has open; with unsaved changes in the
-buffer the two diverge and Zed reloads or reports a conflict. The server implements
-`textDocument/formatting`, so `editor: format` is the route with undo integration and
-buffer semantics. What the task adds is the *message*: a refusal (a parse error, or the
-`whitespaceOnly` guard rejecting the result) is task output you can read, where the editor
-shows a transient toast. Both routes read the same `formatting` block from
-`.cfmleditor.json` and both refuse a file the grammar cannot parse.
-
-`CFML: References to Symbol at Cursor` passes `$ZED_SYMBOL`, which as noted above can be
-empty. The task deliberately does not guard that in shell: Zed substitutes its own
-variables into `command` as well as `args`, so a `${ZED_SYMBOL:-...}` default is not safe
-to write here. `cfmleditor-lsp refs` rejects an empty target itself and exits 1, which is
-where the check belongs.
+extension handle some LSP commands itself (showing locations, scheduling a task).
 
 ## Checking for missing highlights
 
