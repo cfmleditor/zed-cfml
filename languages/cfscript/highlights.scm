@@ -325,6 +325,10 @@
   "}"
 ]  @punctuation.bracket
 
+; Lucee's ordered struct literal, ${ a: 1 }. It shares the "${" token with
+; template_substitution below, so a bare "${" in the list above would claim both.
+(ordered_struct "${" @punctuation.bracket)
+
 (template_substitution
   "${" @punctuation.special
   "}" @punctuation.special) @embedded
