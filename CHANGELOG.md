@@ -10,6 +10,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Update `tree-sitter-cfml` grammar to v0.26.42
 
+### Fixed
+
+- The `${` opening Lucee's ordered struct literal (`${ a: 1 }`, new in grammar
+  v0.26.42) was unhighlighted in cfscript. It shares its token with template
+  substitution, whose rule did not reach it.
+
 ## [0.2.31]
 
 ### Removed
