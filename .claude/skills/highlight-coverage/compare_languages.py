@@ -129,14 +129,34 @@ ZED_CAPTURES = {
 }
 
 
+def styled_as(capture):
+    """The theme key Zed paints capture with, or None.
+
+    Zed takes the longest key that is a prefix of the capture on a dot boundary
+    (`SyntaxTheme::highlight_id` in crates/syntax_theme), so `keyword.operator`
+    renders as `keyword` in a theme without its own entry. The prefix has to be
+    leading: `definition.function` does not fall back to `function`.
+    """
+    parts = capture.split(".")
+    for n in range(len(parts), 0, -1):
+        key = ".".join(parts[:n])
+        if key in ZED_CAPTURES:
+            return key
+    return None
+
+
 def audit_captures():
-    """Report capture names that no Zed theme styles."""
+    """Report capture names that no Zed theme styles, and those styled by fallback."""
     print(f"\n{'=' * 78}\ncapture names Zed does not style\n{'=' * 78}")
     for lang in LANGS:
         used = set(re.findall(r"@([a-z._][a-zA-Z._]*)",
                               open(f"{REPO}/languages/{lang}/highlights.scm").read()))
-        unknown = sorted(used - ZED_CAPTURES)
+        unknown = sorted(c for c in used if styled_as(c) is None)
+        fallback = sorted(f"{c} -> {styled_as(c)}" for c in used - ZED_CAPTURES
+                          if styled_as(c) is not None)
         print(f"  {lang:9} {', '.join(unknown) if unknown else '(all styled)'}")
+        if fallback:
+            print(f"  {'':9} falls back: {', '.join(fallback)}")
 
 
 if __name__ == "__main__":

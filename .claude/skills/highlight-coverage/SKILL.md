@@ -80,6 +80,11 @@ python3 .claude/skills/highlight-coverage/compare_languages.py            # all 
 renders unstyled anyway. `(access_type) @access_type` hid in cfml this way, leaving
 `public`/`private`/`remote` uncoloured while cfscript and cfquery used `@keyword`.
 
+A name that is not a theme key can still be styled: Zed paints a capture with the
+longest theme key that is a leading, dot-bounded prefix of it, so `@keyword.operator`
+renders as `@keyword`. Those are listed as "falls back", not as unstyled. The prefix
+must lead: `@definition.function` does not reach `@function`.
+
 Read the **whole** comparison output, not just the head and tail. The two rules most
 likely to have drifted -- the CFML scopes list and the Lucee builtin-function list --
 are enormous single patterns that scroll straight past. cfquery was missing both.
