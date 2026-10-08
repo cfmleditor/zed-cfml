@@ -1,7 +1,11 @@
 use zed_extension_api as zed;
 
-const SERVER_PATH: &str = "cfmleditor-lsp";
-const GITHUB_REPO: &str = "cfmleditor/cfmleditor-lsp";
+const SERVER_PATH: &str = "clif";
+/// The server's name before it was clif. A copy on PATH under this name is
+/// still run, and a release from before the rename publishes only assets of
+/// this name; every release since publishes them too.
+const LEGACY_SERVER_PATH: &str = "cfmleditor-lsp";
+const GITHUB_REPO: &str = "cfmleditor/clif";
 const LSP_VERSION: &str = "latest";
 
 struct CfmlExtension {
@@ -20,8 +24,10 @@ impl CfmlExtension {
             return Ok(path.clone());
         }
 
-        if let Some(path) = worktree.which(SERVER_PATH) {
-            return Ok(path);
+        for name in [SERVER_PATH, LEGACY_SERVER_PATH] {
+            if let Some(path) = worktree.which(name) {
+                return Ok(path);
+            }
         }
 
         zed::set_language_server_installation_status(
@@ -54,19 +60,32 @@ impl CfmlExtension {
             zed::Architecture::X86 => "386",
         };
 
-        let ext = if os == zed::Os::Windows { "zip" } else { "tar.gz" };
-        let asset_name = format!("cfmleditor-lsp-{os_str}-{arch_str}.{ext}");
-        let asset = release
-            .assets
-            .iter()
-            .find(|a| a.name == asset_name)
-            .ok_or_else(|| format!("no asset found matching {asset_name}"))?;
-
-        let version_dir = format!("cfmleditor-lsp-{}", release.version);
-        let binary_name = if os == zed::Os::Windows {
-            format!("{SERVER_PATH}.exe")
+        // clif's asset first, then the one a release from before the rename
+        // has; each archive holds a binary of its own name.
+        let ext = if os == zed::Os::Windows {
+            "zip"
         } else {
-            SERVER_PATH.to_string()
+            "tar.gz"
+        };
+        let (server_name, asset) = [SERVER_PATH, LEGACY_SERVER_PATH]
+            .into_iter()
+            .find_map(|name| {
+                let asset_name = format!("{name}-{os_str}-{arch_str}.{ext}");
+                release
+                    .assets
+                    .iter()
+                    .find(|a| a.name == asset_name)
+                    .map(|a| (name, a))
+            })
+            .ok_or_else(|| {
+                format!("no asset found matching {SERVER_PATH}-{os_str}-{arch_str}.{ext}")
+            })?;
+
+        let version_dir = format!("{server_name}-{}", release.version);
+        let binary_name = if os == zed::Os::Windows {
+            format!("{server_name}.exe")
+        } else {
+            server_name.to_string()
         };
         let binary_path = format!("{version_dir}/{binary_name}");
 
@@ -82,12 +101,8 @@ impl CfmlExtension {
                 zed::DownloadedFileType::GzipTar
             };
 
-            zed::download_file(
-                &asset.download_url,
-                &version_dir,
-                file_type,
-            )
-            .map_err(|e| format!("failed to download: {e}"))?;
+            zed::download_file(&asset.download_url, &version_dir, file_type)
+                .map_err(|e| format!("failed to download: {e}"))?;
 
             zed::make_file_executable(&binary_path)
                 .map_err(|e| format!("failed to make executable: {e}"))?;
@@ -98,11 +113,10 @@ impl CfmlExtension {
                     let path = entry.path();
                     let name = entry.file_name();
                     let name = name.to_string_lossy();
-                    if name.starts_with("cfmleditor-lsp-")
-                        && name.as_ref() != version_dir
-                        && path.is_dir()
-                        && !path.is_symlink()
-                    {
+                    let ours = [SERVER_PATH, LEGACY_SERVER_PATH]
+                        .iter()
+                        .any(|server| name.starts_with(&format!("{server}-")));
+                    if ours && name.as_ref() != version_dir && path.is_dir() && !path.is_symlink() {
                         let _ = std::fs::remove_dir_all(&path);
                     }
                 }

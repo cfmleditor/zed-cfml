@@ -70,6 +70,15 @@ node types:
 for d in cfml cfscript cfquery; do echo "$d: $(git -C grammars/$d rev-parse HEAD)"; done
 ```
 
+## The server: clif, formerly cfmleditor-lsp
+
+The language server was renamed clif and is released from `cfmleditor/clif`. `src/lib.rs`
+looks for `clif` and then `cfmleditor-lsp` on PATH, and downloads the `clif-<platform>`
+asset, falling back to `cfmleditor-lsp-<platform>` for a release from before the rename.
+The language server id in `extension.toml` stays `cfmleditor-lsp`: users' Zed settings
+are keyed by it (`"lsp": {"cfmleditor-lsp": …}`), and renaming it would drop them. Only
+its display name is clif.
+
 ## No tasks: server features go through LSP
 
 The extension ships no `tasks.json`. Up to 0.2.30 it had nine tasks wrapping
@@ -81,7 +90,7 @@ private directory, and anything the language server can do belongs in code actio
 Every task but `explain` had a server equivalent, so they were removed in 0.2.31, and
 `explain` became `cfmleditor.explainCall` and its code action in cfmleditor-lsp 0.3.7.
 
-Add new user-facing features to `cfmleditor-lsp`, not here. Zed reaches them two ways:
+Add new user-facing features to the language server, clif (formerly `cfmleditor-lsp`), not here. Zed reaches them two ways:
 
 - **The LSP command picker**, Zed 1.21 and later
   ([zed#63607](https://github.com/zed-industries/zed/pull/63607)): `lsp command selector:
@@ -94,7 +103,7 @@ Standard LSP requests cover the rest: `editor: format` for formatting, Find All
 References, and diagnostics for parse errors and unresolved calls.
 
 Do not reintroduce a task that locates the downloaded binary. If a CLI-only task is ever
-worth shipping, call plain `cfmleditor-lsp` and let it fail when it is not on `PATH`.
+worth shipping, call plain `clif` and let it fail when it is not on `PATH`.
 [zed#56222](https://github.com/zed-industries/zed/pull/56222), still open, would let an
 extension handle some LSP commands itself (showing locations, scheduling a task).
 
