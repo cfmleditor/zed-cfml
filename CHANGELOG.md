@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.2.33]
+
 ### Changed
 
 - The language server is now **clif** (formerly cfmleditor-lsp), downloaded from `cfmleditor/clif`. A `clif` or `cfmleditor-lsp` on PATH is still used, and a release from before the rename still downloads through its `cfmleditor-lsp` asset. The language server id stays `cfmleditor-lsp`, so `lsp.cfmleditor-lsp` settings keep working.
