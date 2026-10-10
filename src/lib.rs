@@ -1,6 +1,9 @@
 use zed_extension_api as zed;
 
 const SERVER_PATH: &str = "clif";
+/// The server's name before it was clif. Never run or downloaded any more;
+/// only used to delete copies an older version of the extension downloaded.
+const LEGACY_SERVER_PATH: &str = "cfmleditor-lsp";
 const GITHUB_REPO: &str = "cfmleditor/clif";
 const LSP_VERSION: &str = "latest";
 
@@ -98,11 +101,10 @@ impl CfmlExtension {
                     let path = entry.path();
                     let name = entry.file_name();
                     let name = name.to_string_lossy();
-                    if name.starts_with(&format!("{SERVER_PATH}-"))
-                        && name.as_ref() != version_dir
-                        && path.is_dir()
-                        && !path.is_symlink()
-                    {
+                    let stale = name.starts_with(&format!("{LEGACY_SERVER_PATH}-"))
+                        || (name.starts_with(&format!("{SERVER_PATH}-"))
+                            && name.as_ref() != version_dir);
+                    if stale && path.is_dir() && !path.is_symlink() {
                         let _ = std::fs::remove_dir_all(&path);
                     }
                 }
