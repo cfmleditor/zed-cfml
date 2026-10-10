@@ -73,8 +73,8 @@ for d in cfml cfscript cfquery; do echo "$d: $(git -C grammars/$d rev-parse HEAD
 ## The server: clif, formerly cfmleditor-lsp
 
 The language server was renamed clif and is released from `cfmleditor/clif`. `src/lib.rs`
-looks for `clif` and then `cfmleditor-lsp` on PATH, and downloads the `clif-<platform>`
-asset, falling back to `cfmleditor-lsp-<platform>` for a release from before the rename.
+looks for `clif` on PATH and downloads the `clif-<platform>` asset; the old
+`cfmleditor-lsp` binary and assets are no longer supported.
 The language server id in `extension.toml` stays `cfmleditor-lsp`: users' Zed settings
 are keyed by it (`"lsp": {"cfmleditor-lsp": …}`), and renaming it would drop them. Only
 its display name is clif.
