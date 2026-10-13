@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking:** the language server id is now `clif` instead of `cfmleditor-lsp`, so Zed shows clif in the language server menu and logs. Settings keyed by the old id stop applying and need renaming:
+  - `"lsp": {"cfmleditor-lsp": …}` becomes `"lsp": {"clif": …}`.
+  - `"language_servers"` lists for `CFML (Tag)`, `CFML (Script)` or `CFML (Query)` that name `cfmleditor-lsp` (for example `"!cfmleditor-lsp"` to turn it off) need `clif` instead. Until they are updated, a server you had turned off will start again.
+
 ## [0.2.34]
 
 ### Removed

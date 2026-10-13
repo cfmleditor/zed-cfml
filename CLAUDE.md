@@ -75,9 +75,11 @@ for d in cfml cfscript cfquery; do echo "$d: $(git -C grammars/$d rev-parse HEAD
 The language server was renamed clif and is released from `cfmleditor/clif`. `src/lib.rs`
 looks for `clif` on PATH and downloads the `clif-<platform>` asset; the old
 `cfmleditor-lsp` binary and assets are no longer supported.
-The language server id in `extension.toml` stays `cfmleditor-lsp`: users' Zed settings
-are keyed by it (`"lsp": {"cfmleditor-lsp": …}`), and renaming it would drop them. Only
-its display name is clif.
+The language server id in `extension.toml` was renamed from `cfmleditor-lsp` to `clif`
+in the release after 0.2.34, because Zed labels the server by its id, not by `name`. Users'
+settings are keyed by the id (`"lsp": {…}` and per-language `"language_servers"` lists),
+so that rename was a breaking change. Do not rename it again without a CHANGELOG entry
+telling users to migrate those keys.
 
 ## No tasks: server features go through LSP
 
