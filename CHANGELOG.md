@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.2.35]
+
 ### Changed
 
 - **Breaking:** the language server id is now `clif` instead of `cfmleditor-lsp`, so Zed shows clif in the language server menu and logs. Settings keyed by the old id stop applying and need renaming:
